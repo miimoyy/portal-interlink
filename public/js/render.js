@@ -5268,7 +5268,24 @@ function updateRoleBasedUI() {
     if (ownClient) {
       const clSt = ownClient.status;
       const isSuspOrTerm = clSt === 'Suspend' || clSt === 'Terminate' || clSt === 'Terminated';
-      if (btnSubmitTicket) btnSubmitTicket.style.setProperty('display', isSuspOrTerm ? 'none' : 'inline-flex', 'important');
+      if (btnSubmitTicket) {
+        btnSubmitTicket.style.setProperty('display', 'inline-flex', 'important');
+        if (isSuspOrTerm) {
+          btnSubmitTicket.disabled = true;
+          btnSubmitTicket.style.setProperty('opacity', '0.35', 'important');
+          btnSubmitTicket.style.setProperty('cursor', 'not-allowed', 'important');
+          btnSubmitTicket.style.setProperty('pointer-events', 'none', 'important');
+          btnSubmitTicket.style.setProperty('filter', 'grayscale(60%)', 'important');
+          btnSubmitTicket.title = clSt === 'Suspend' ? 'Akun Suspend - tidak bisa submit tiket' : 'Akun Terminate - tidak bisa submit tiket';
+        } else {
+          btnSubmitTicket.disabled = false;
+          btnSubmitTicket.style.removeProperty('opacity');
+          btnSubmitTicket.style.removeProperty('cursor');
+          btnSubmitTicket.style.removeProperty('pointer-events');
+          btnSubmitTicket.style.removeProperty('filter');
+          btnSubmitTicket.title = '';
+        }
+      }
       // Also enforce action buttons in device toolbar based on status
       const devBtnAdd = document.getElementById('btnAddDevice');
       const devBtnKeluar = document.getElementById('btnAddKeluar');
