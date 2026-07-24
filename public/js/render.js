@@ -1263,15 +1263,29 @@ function switchDeviceTab(tab){
   const btnAdd = document.getElementById('btnAddDevice');
   const btnKeluarPick = document.getElementById('btnAddKeluar');
   btnAdd.onclick = ()=>quickAddDevice(selectedClientId, currentDeviceTab);
+
+  // For Hold clients on the keluar tab: redirect button to Masuk Barang
+  const clDataTab = (isClient() || isSubclient()) ? clients.find(cl => cl.id === currentUser.clientId) : null;
+  const clStTab = clDataTab ? clDataTab.status : null;
+  const isHoldTab = clStTab === 'Hold';
+  const isSuspTab = clStTab === 'Suspend';
+  const isTermTab = clStTab === 'Terminate' || clStTab === 'Terminated';
+
   if(tab==='masuk'){
     btnAdd.innerHTML=canManageInventory()?'+ Tambah Perangkat Masuk':'🎫 Ajukan Perangkat Masuk';
     btnAdd.style.background='var(--blue)';
     if(btnKeluarPick) btnKeluarPick.style.display='none';
   }else{
-    btnAdd.innerHTML=canManageInventory()?'+ Catat Perangkat Keluar Manual':'🎫 Ajukan Perangkat Keluar';
-    btnAdd.style.background='var(--orange)';
+    // Hold/Suspend/Terminate: show Masuk button even on Keluar tab
+    if(isHoldTab || isSuspTab || isTermTab){
+      btnAdd.innerHTML='🎫 Ajukan Perangkat Masuk';
+      btnAdd.style.background='var(--blue)';
+      btnAdd.onclick = ()=>quickAddDevice(selectedClientId, 'masuk');
+    } else {
+      btnAdd.innerHTML=canManageInventory()?'+ Catat Perangkat Keluar Manual':'🎫 Ajukan Perangkat Keluar';
+      btnAdd.style.background='var(--orange)';
+    }
     if(btnKeluarPick){
-      // Untuk client, tombol + Catat Keluar dihapus (harus via tiket)
       if(isClient()){
         btnKeluarPick.style.display='none';
       }else{
@@ -1346,16 +1360,31 @@ function renderDevices(){
 
   tbody.innerHTML='';
   let invHtml = '';
+
+  const clDataRow = (isClient() || isSubclient()) ? clients.find(cl => cl.id === currentUser.clientId) : null;
+  const clStRow = clDataRow ? clDataRow.status : null;
+  const isTermRow = clStRow === 'Terminate' || clStRow === 'Terminated';
+  const isSuspRow = clStRow === 'Suspend';
+  const isHoldRow = clStRow === 'Hold';
+  const canMarkExit = !isTermRow && !isSuspRow && !isHoldRow && checkPermission(currentUser.role, 'inventory_keluar');
+
   list.forEach(function(d){
     const tglMasukFmt = d.tglMasuk ? new Date(d.tglMasuk).toLocaleDateString('id-ID',{day:'2-digit',month:'short',year:'numeric'}) : '-';
     if(currentDeviceTab==='masuk'){
       const ticketBadge = d.ticketStatus==='Diproses' ? '<span class="badge warn" style="margin-left:6px;">DIPROSES</span>' : d.ticketStatus==='Menunggu Approval' ? '<span class="badge info" style="margin-left:6px;">MENUNGGU</span>' : d.ticketStatus==='Disetujui' ? '<span class="badge info" style="margin-left:6px;">DISETUJUI</span>' : '';
       const beratPerUnit = getDeviceBerat(d);
-      invHtml += '<tr><td class="item-name">' + escapeHtml(d.nama) + ' ' + ticketBadge + (d.exited?'<span class="badge crit" style="margin-left:6px;">Sudah Keluar</span>':'') + '</td><td><span class="device-type-badge in">' + escapeHtml(d.kategori) + '</span></td><td style="font-family:var(--font-mono);font-size:12px;line-height:1.5;">' + renderSNCell(d.sn, d.jumlah) + '</td><td>' + escapeHtml(d.rackPos||'-') + '</td><td style="font-family:var(--font-mono);text-align:center;">' + formatBeratDisplay(beratPerUnit) + '</td><td><span class="badge ' + (d.kondisi==='Baik'||d.kondisi==='Baru'?'ok':d.kondisi==='Rusak'?'crit':d.kondisi==='Menunggu'?'info':'warn') + '">' + escapeHtml(d.kondisi) + '</span></td><td style="font-family:var(--font-mono);white-space:nowrap;">' + tglMasukFmt + '</td><td style="max-width:160px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">' + escapeHtml(d.ket||'-') + ' ' + (d.ticketId? '<span style="font-family:var(--font-mono);font-size:10px;color:var(--cyan);">• '+escapeHtml(d.ticketId)+'</span>':'') + '</td><td><div style="display:flex;gap:6px;flex-wrap:nowrap;">' + (checkPermission(currentUser.role, 'inventory_keluar') ? '<button class="action-icon" title="Keluarkan via Tiket" onclick="markExit(\'' + d.id + '\')">📤</button>' : '') + '' + (canManageInventory() ? '<button class="action-icon" title="Edit" onclick="editDevice(\''+d.id+'\')">✏️</button><button class="action-icon danger" title="Hapus" onclick="deleteDevice(\''+d.id+'\')">🗑</button>' : '<span style="font-size:10px;color:var(--text-dim);padding:6px;white-space:nowrap;">Ticket required</span>') + '</div></td></tr>';
+      const aksiCol = (isTermRow || isSuspRow || isHoldRow)
+        ? '<span style="font-size:10px;color:var(--text-dim);padding:6px;white-space:nowrap;">Read-only</span>'
+        : (canMarkExit ? '<button class="action-icon" title="Keluarkan via Tiket" onclick="markExit(\'' + d.id + '\')">📤</button>' : '') +
+          (canManageInventory() ? '<button class="action-icon" title="Edit" onclick="editDevice(\''+d.id+'\')" >✏️</button><button class="action-icon danger" title="Hapus" onclick="deleteDevice(\''+d.id+'\')" >🗑</button>' : '<span style="font-size:10px;color:var(--text-dim);padding:6px;white-space:nowrap;">Ticket required</span>');
+      invHtml += '<tr><td class="item-name">' + escapeHtml(d.nama) + ' ' + ticketBadge + (d.exited?'<span class="badge crit" style="margin-left:6px;">Sudah Keluar</span>':'') + '</td><td><span class="device-type-badge in">' + escapeHtml(d.kategori) + '</span></td><td style="font-family:var(--font-mono);font-size:12px;line-height:1.5;">' + renderSNCell(d.sn, d.jumlah) + '</td><td>' + escapeHtml(d.rackPos||'-') + '</td><td style="font-family:var(--font-mono);text-align:center;">' + formatBeratDisplay(beratPerUnit) + '</td><td><span class="badge ' + (d.kondisi==='Baik'||d.kondisi==='Baru'?'ok':d.kondisi==='Rusak'?'crit':d.kondisi==='Menunggu'?'info':'warn') + '">' + escapeHtml(d.kondisi) + '</span></td><td style="font-family:var(--font-mono);white-space:nowrap;">' + tglMasukFmt + '</td><td style="max-width:160px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">' + escapeHtml(d.ket||'-') + ' ' + (d.ticketId? '<span style="font-family:var(--font-mono);font-size:10px;color:var(--cyan);">• '+escapeHtml(d.ticketId)+'</span>':'') + '</td><td><div style="display:flex;gap:6px;flex-wrap:nowrap;">' + aksiCol + '</div></td></tr>';
     }else{
       const tglKeluarFmt = d.tglKeluar ? new Date(d.tglKeluar).toLocaleDateString('id-ID',{day:'2-digit',month:'short',year:'numeric'}) : '-';
       const beratKeluarPerUnit = getDeviceBerat(d);
-      invHtml += '<tr><td class="item-name">' + escapeHtml(d.nama) + '</td><td><span class="device-type-badge out">' + escapeHtml(d.kategori) + '</span></td><td style="font-family:var(--font-mono);font-size:12px;line-height:1.5;">' + renderSNCell(d.sn, d.jumlah) + '</td><td style="font-family:var(--font-mono);text-align:center;">' + formatBeratDisplay(beratKeluarPerUnit) + '</td><td style="font-family:var(--font-mono);white-space:nowrap;">' + tglMasukFmt + '</td><td style="font-family:var(--font-mono);white-space:nowrap;font-weight:600;color:var(--orange);">' + tglKeluarFmt + '</td><td>' + escapeHtml(d.alasan||'-') + '</td><td><span class="badge ' + (d.kondisi==='Baik'||d.kondisi==='Baru'?'ok':d.kondisi==='Rusak'?'crit':'warn') + '">' + escapeHtml(d.kondisi) + '</span></td><td><div style="display:flex;gap:6px;">' + (canManageInventory() ? '<button class="action-icon" title="Edit" onclick="editDevice(\''+d.id+'\')">✏️</button><button class="action-icon danger" title="Hapus" onclick="deleteDevice(\''+d.id+'\')">🗑</button>' : '<span style="font-size:10px;color:var(--text-dim);padding:6px;">Ticket required</span>') + '</div></td></tr>';
+      const aksiKelCol = (isTermRow || isSuspRow || isHoldRow)
+        ? '<span style="font-size:10px;color:var(--text-dim);padding:6px;white-space:nowrap;">Read-only</span>'
+        : (canManageInventory() ? '<button class="action-icon" title="Edit" onclick="editDevice(\''+d.id+'\')" >✏️</button><button class="action-icon danger" title="Hapus" onclick="deleteDevice(\''+d.id+'\')" >🗑</button>' : '<span style="font-size:10px;color:var(--text-dim);padding:6px;">Ticket required</span>');
+      invHtml += '<tr><td class="item-name">' + escapeHtml(d.nama) + '</td><td><span class="device-type-badge out">' + escapeHtml(d.kategori) + '</span></td><td style="font-family:var(--font-mono);font-size:12px;line-height:1.5;">' + renderSNCell(d.sn, d.jumlah) + '</td><td style="font-family:var(--font-mono);text-align:center;">' + formatBeratDisplay(beratKeluarPerUnit) + '</td><td style="font-family:var(--font-mono);white-space:nowrap;">' + tglMasukFmt + '</td><td style="font-family:var(--font-mono);white-space:nowrap;font-weight:600;color:var(--orange);">' + tglKeluarFmt + '</td><td>' + escapeHtml(d.alasan||'-') + '</td><td><span class="badge ' + (d.kondisi==='Baik'||d.kondisi==='Baru'?'ok':d.kondisi==='Rusak'?'crit':'warn') + '">' + escapeHtml(d.kondisi) + '</span></td><td><div style="display:flex;gap:6px;">' + aksiKelCol + '</div></td></tr>';
     }
   });
   tbody.innerHTML = invHtml;
