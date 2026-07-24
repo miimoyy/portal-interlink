@@ -502,8 +502,20 @@ function applyRoleToUI(){
     if(btnAddKeluar) btnAddKeluar.style.display = 'none';
     if(btnAddDevice) btnAddDevice.style.display = 'none';
   } else {
-    if(btnAddKeluar) btnAddKeluar.style.display = (checkPermission(currentUser.role, 'inventory_keluar') && !isHold) ? 'inline-block' : 'none';
-    if(btnAddDevice) btnAddDevice.style.display = checkPermission(currentUser.role, 'inventory_masuk') ? 'inline-block' : 'none';
+    // Determine client status
+    const clStatus = clDataUI ? clDataUI.status : null;
+    const isSuspend = clStatus === 'Suspend';
+    const isTerminate = clStatus === 'Terminate' || clStatus === 'Terminated';
+    // btnAddDevice (Masuk Barang): hidden for Suspend and Terminate
+    if(btnAddDevice){
+      const showMasuk = !isSuspend && !isTerminate && checkPermission(currentUser.role, 'inventory_masuk');
+      btnAddDevice.style.display = showMasuk ? 'inline-block' : 'none';
+    }
+    // btnAddKeluar (Keluar Barang): only Aktif can use it
+    if(btnAddKeluar){
+      const showKeluar = !isSuspend && !isTerminate && !isHold && checkPermission(currentUser.role, 'inventory_keluar');
+      btnAddKeluar.style.display = showKeluar ? 'inline-block' : 'none';
+    }
   }
 
   const tkKeluarOption = document.querySelector('option[value="Keluar Barang"]');
@@ -1299,11 +1311,18 @@ function renderDevices(){
     if(btnAdd) btnAdd.style.display = 'none';
     if(btnKeluar) btnKeluar.style.display = 'none';
   } else {
-    if(btnAdd){ 
+    const clDataDev = (isClient() || isSubclient()) ? clients.find(cl => cl.id === currentUser.clientId) : null;
+    const clSt = clDataDev ? clDataDev.status : null;
+    const isSusp = clSt === 'Suspend';
+    const isTerm = clSt === 'Terminate' || clSt === 'Terminated';
+    const isHoldSt = clSt === 'Hold' || isHold;
+    if(btnAdd){
       const perm = currentDeviceTab === 'keluar' ? 'inventory_keluar' : 'inventory_masuk';
-      btnAdd.style.display = checkPermission(currentUser.role, perm) ? 'inline-block' : 'none'; 
+      const allowKeluar = !isSusp && !isTerm && !isHoldSt && checkPermission(currentUser.role, 'inventory_keluar');
+      const allowMasuk  = !isSusp && !isTerm && checkPermission(currentUser.role, 'inventory_masuk');
+      btnAdd.style.display = ((currentDeviceTab === 'keluar' ? allowKeluar : allowMasuk)) ? 'inline-block' : 'none';
     }
-    if(btnKeluar){ btnKeluar.style.display = checkPermission(currentUser.role, 'inventory_keluar') ? 'inline-block' : 'none'; }
+    if(btnKeluar) btnKeluar.style.display = 'none'; // client uses ticket only
   }
 
   const emptyState = document.getElementById('deviceEmptyState');
@@ -3832,14 +3851,18 @@ function populateTitikBDropdown(selectedTitikB = '') {
 }
 
 function openTicketModalWithType(type){
-  const clData = (isClient() || isSubclient()) ? clients.find(cl=>cl.id===currentUser.clientId) : null;
+  const clData = (isClient() || isSubclient()) ? clients.find(cl => cl.id === currentUser.clientId) : null;
   if (clData) {
     if (clData.status === 'Suspend') {
       showToast('Akun PT Anda berstatus SUSPEND. Anda hanya dapat melihat data (tidak dapat mengajukan tiket).', 'error');
       return;
     }
     if (clData.status === 'Terminate' || clData.status === 'Terminated') {
-      showToast('Akun PT Anda telah ditutup (Terminated). Tidak dapat mengajukan tiket.', 'error');
+      showToast('Akun PT Anda telah ditutup (Terminate). Tidak dapat mengajukan tiket.', 'error');
+      return;
+    }
+    if ((clData.status === 'Hold') && type !== 'Masuk Barang') {
+      showToast('Akun PT Anda berstatus HOLD. Hanya diperbolehkan mengajukan tiket Masuk Barang.', 'error');
       return;
     }
   }
@@ -4259,30 +4282,43 @@ function checkCurrentHoldStatus() {
 }
 
 function updateTkTypeOptionsForHold() {
-  const isHold = checkCurrentHoldStatus();
   const tkType = document.getElementById('tk_type');
   if(!tkType) return;
   const currentVal = tkType.value;
   const modal = document.getElementById('modalTicket');
   const isEditing = modal && modal.dataset.editing;
 
+  // Get client status
+  const clDataUI = (isClient() || isSubclient()) ? clients.find(cl => cl.id === currentUser.clientId) : null;
+  const clStatus = clDataUI ? clDataUI.status : null;
+
+  // Check rack hold
   const selectedRackIdVal = document.getElementById('tk_rack') ? document.getElementById('tk_rack').value : (typeof selectedRackId !== 'undefined' ? selectedRackId : '');
   const rObj = selectedRackIdVal ? racks.find(r => r.id.toLowerCase() === selectedRackIdVal.toLowerCase()) : null;
   const isRackHold = rObj && rObj.status === 'Hold';
 
-  if((isRackHold || isSubclient()) && !isEditing) {
-    tkType.innerHTML = `<option value="Masuk Barang">📥 Masuk Barang</option>`;
-    tkType.value = 'Masuk Barang';
-  } else {
+  // For non-client roles: show all options
+  if (!isClient() && !isSubclient()) {
     tkType.innerHTML = `<option value="CrossConnect">🔗 CrossConnect</option>
       <option value="Masuk Barang">📥 Masuk Barang</option>
       <option value="Keluar Barang">📤 Keluar Barang</option>
       <option value="Permintaan Terminate" data-client-only>⛔ Permintaan Terminate</option>`;
-    if(Array.from(tkType.options).some(o=>o.value===currentVal)){
-       tkType.value = currentVal;
-    } else {
-       tkType.value = tkType.options[0].value;
-    }
+    if(Array.from(tkType.options).some(o => o.value === currentVal)) tkType.value = currentVal;
+    else tkType.value = tkType.options[0].value;
+    onTicketTypeChange();
+    return;
+  }
+
+  // Client / Subclient: only Masuk Barang + Keluar Barang, filtered by status
+  const isHoldStatus = clStatus === 'Hold' || isRackHold || isSubclient();
+  if(isHoldStatus && !isEditing) {
+    tkType.innerHTML = `<option value="Masuk Barang">📥 Masuk Barang</option>`;
+    tkType.value = 'Masuk Barang';
+  } else if(!isEditing) {
+    tkType.innerHTML = `<option value="Masuk Barang">📥 Masuk Barang</option>
+      <option value="Keluar Barang">📤 Keluar Barang</option>`;
+    if(Array.from(tkType.options).some(o => o.value === currentVal)) tkType.value = currentVal;
+    else tkType.value = 'Masuk Barang';
   }
 
   onTicketTypeChange();
@@ -5201,11 +5237,15 @@ function updateRoleBasedUI() {
     const ownClient = clients.find(c => c.id === currentUser.clientId);
     const btnSubmitTicket = document.getElementById('btnSubmitTicket');
     if (ownClient) {
-      if (ownClient.status === 'Suspend' || ownClient.status === 'Terminate' || ownClient.status === 'Terminated') {
-        if (btnSubmitTicket) btnSubmitTicket.style.setProperty('display', 'none', 'important');
-      } else {
-        if (btnSubmitTicket) btnSubmitTicket.style.setProperty('display', 'inline-flex', 'important');
-      }
+      const clSt = ownClient.status;
+      const isSuspOrTerm = clSt === 'Suspend' || clSt === 'Terminate' || clSt === 'Terminated';
+      if (btnSubmitTicket) btnSubmitTicket.style.setProperty('display', isSuspOrTerm ? 'none' : 'inline-flex', 'important');
+      // Also enforce action buttons in device toolbar based on status
+      const devBtnAdd = document.getElementById('btnAddDevice');
+      const devBtnKeluar = document.getElementById('btnAddKeluar');
+      const isHoldSt = clSt === 'Hold';
+      if(devBtnAdd) devBtnAdd.style.setProperty('display', isSuspOrTerm ? 'none' : 'inline-flex', 'important');
+      if(devBtnKeluar) devBtnKeluar.style.setProperty('display', (isSuspOrTerm || isHoldSt) ? 'none' : 'inline-flex', 'important');
     }
   }
 }
