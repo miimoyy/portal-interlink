@@ -147,6 +147,21 @@ function authenticate(req, res, next) {
     return res.status(403).json({ error: 'Sesi telah kedaluwarsa. Silakan login kembali.' });
   }
   
+  if (session.role === 'client' || session.role === 'subclient') {
+    const client = session.clientId ? db.prepare('SELECT * FROM clients WHERE id = ?').get(session.clientId) : null;
+    if (client) {
+      let termDate = null;
+      if (client.berhentiAt) termDate = new Date(client.berhentiAt).getTime();
+      else if (client.terminatedAt) termDate = new Date(client.terminatedAt).getTime();
+      else if (client.terminateAccessEndsAt) termDate = new Date(client.terminateAccessEndsAt).getTime();
+
+      if (termDate && !Number.isNaN(termDate) && Date.now() >= termDate + (7 * 24 * 60 * 60 * 1000)) {
+        db.prepare('DELETE FROM sessions WHERE token = ?').run(token);
+        return res.status(403).json({ error: 'Akses akun Klien telah ditutup permanen setelah 1 minggu termination.' });
+      }
+    }
+  }
+
   req.user = session;
   next();
 }
@@ -170,6 +185,24 @@ app.post('/api/auth/login', authLimiter, async (req, res) => {
   }
   const user = db.prepare('SELECT * FROM users WHERE LOWER(email) = LOWER(?)').get(email);
   if (user && (await bcrypt.compare(password, user.password))) {
+    // Check if client termination cutoff of 7 days (1 week) has passed
+    if (user.role === 'client' || user.role === 'subclient') {
+      const client = user.clientId ? db.prepare('SELECT * FROM clients WHERE id = ?').get(user.clientId) : null;
+      if (client) {
+        let termDate = null;
+        if (client.berhentiAt) termDate = new Date(client.berhentiAt).getTime();
+        else if (client.terminatedAt) termDate = new Date(client.terminatedAt).getTime();
+        else if (client.terminateAccessEndsAt) termDate = new Date(client.terminateAccessEndsAt).getTime();
+
+        if (termDate && !Number.isNaN(termDate)) {
+          const sevenDaysMs = 7 * 24 * 60 * 60 * 1000;
+          if (Date.now() >= termDate + sevenDaysMs) {
+            return res.status(403).json({ error: 'Akses akun Klien telah ditutup permanen setelah 1 minggu termination. Seluruh data historis tetap tersimpan lengkap di Admin.' });
+          }
+        }
+      }
+    }
+
     const token = crypto.randomBytes(32).toString('hex');
     const expiresAt = Date.now() + SESSION_TTL_MS;
     

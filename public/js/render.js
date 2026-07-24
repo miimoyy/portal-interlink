@@ -3675,11 +3675,24 @@ function populateTitikBDropdown(selectedTitikB = '') {
 
 function openTicketModalWithType(type){
   const clData = (isClient() || isSubclient()) ? clients.find(cl=>cl.id===currentUser.clientId) : null;
-  const isHold = clData && clData.status === 'Hold';
-  if(isHold && type !== 'Masuk Barang') {
-    showToast('Akun Anda berstatus HOLD. Hanya diperbolehkan mengajukan tiket Masuk Barang.', 'error');
+  if (clData) {
+    if (clData.status === 'Suspend') {
+      showToast('Akun PT Anda berstatus SUSPEND. Anda hanya dapat melihat data (tidak dapat mengajukan tiket).', 'error');
+      return;
+    }
+    if (clData.status === 'Berhenti Langganan' || clData.status === 'Terminated') {
+      showToast('Akun PT Anda telah ditutup (Terminated). Tidak dapat mengajukan tiket.', 'error');
+      return;
+    }
+  }
+
+  const selectedRackIdVal = document.getElementById('tk_rack') ? document.getElementById('tk_rack').value : (typeof selectedRackId !== 'undefined' ? selectedRackId : '');
+  const rObj = selectedRackIdVal ? racks.find(r => r.id.toLowerCase() === selectedRackIdVal.toLowerCase()) : null;
+  if (rObj && rObj.status === 'Hold' && type !== 'Masuk Barang') {
+    showToast(`Rack ${rObj.id} sedang berstatus HOLD. Hanya diperbolehkan mengajukan tiket Masuk Barang.`, 'error');
     return;
   }
+
   openTicketModal();
   setTimeout(()=>{
     document.getElementById('tk_type').value = type;
@@ -4095,7 +4108,11 @@ function updateTkTypeOptionsForHold() {
   const modal = document.getElementById('modalTicket');
   const isEditing = modal && modal.dataset.editing;
 
-  if((isHold || isSubclient()) && !isEditing) {
+  const selectedRackIdVal = document.getElementById('tk_rack') ? document.getElementById('tk_rack').value : (typeof selectedRackId !== 'undefined' ? selectedRackId : '');
+  const rObj = selectedRackIdVal ? racks.find(r => r.id.toLowerCase() === selectedRackIdVal.toLowerCase()) : null;
+  const isRackHold = rObj && rObj.status === 'Hold';
+
+  if((isRackHold || isSubclient()) && !isEditing) {
     tkType.innerHTML = `<option value="Masuk Barang">📥 Masuk Barang</option>`;
     tkType.value = 'Masuk Barang';
   } else {
@@ -4508,17 +4525,22 @@ function saveTicket(){
   const rackIdForSave = rackSelectVal || (selectedClientData ? selectedClientData.lokasi : '');
   const saveRack = racks.find(r => r.id === rackIdForSave || (rackIdForSave && rackIdForSave.includes(r.id)));
   const isRackHold = !!(saveRack && saveRack.status === 'Hold');
+  if(selectedClientData) {
+    if(selectedClientData.status === 'Suspend') {
+      alert('Akun PT Anda berstatus SUSPEND. Anda hanya dapat melihat data (tidak dapat mengajukan/mengubah tiket).');
+      return;
+    }
+    if(selectedClientData.status === 'Berhenti Langganan' || selectedClientData.status === 'Terminated') {
+      alert('Akun PT Anda telah ditutup (Terminated). Tidak dapat mengajukan/mengubah tiket.');
+      return;
+    }
+  }
   if(isSubclient() && type !== 'Masuk Barang') {
     alert('Sub-Account hanya diperbolehkan mengajukan tiket Masuk Barang.');
     return;
   }
-  const isClientHoldFlag = selectedClientData && selectedClientData.status === 'Hold';
-  if(isClientHoldFlag && type !== 'Masuk Barang') {
-    alert('Akun Anda berstatus HOLD. Hanya diperbolehkan mengajukan tiket Masuk Barang.');
-    return;
-  }
   if(isRackHold && type !== 'Masuk Barang') {
-    alert('Rack ini berstatus HOLD. Hanya dapat mengajukan tiket Masuk Barang.');
+    alert(`Rack ${saveRack ? saveRack.id : ''} sedang berstatus HOLD. Hanya diperbolehkan mengajukan tiket Masuk Barang.`);
     return;
   }
   const terminateRequestedAt = type===TERMINATION_TYPE
@@ -5015,6 +5037,19 @@ function updateRoleBasedUI() {
   if (thClientAksi) thClientAksi.style.setProperty('display', hideForClient ? 'none' : 'table-cell', 'important');
   const thXcAksi = document.getElementById('thXcAksi');
   if (thXcAksi) thXcAksi.style.setProperty('display', hideForClient ? 'none' : 'table-cell', 'important');
+
+  // 8. Client action restrictions based on client status (Suspend / Terminated)
+  if (isClient() || isSubclient()) {
+    const ownClient = clients.find(c => c.id === currentUser.clientId);
+    const btnSubmitTicket = document.getElementById('btnSubmitTicket');
+    if (ownClient) {
+      if (ownClient.status === 'Suspend' || ownClient.status === 'Berhenti Langganan' || ownClient.status === 'Terminated') {
+        if (btnSubmitTicket) btnSubmitTicket.style.setProperty('display', 'none', 'important');
+      } else {
+        if (btnSubmitTicket) btnSubmitTicket.style.setProperty('display', 'inline-flex', 'important');
+      }
+    }
+  }
 }
 
 function refreshAllActiveViews() {
