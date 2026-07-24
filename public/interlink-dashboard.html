@@ -194,7 +194,7 @@
           <div class="search-box"><span>🔍</span><input type="text" id="clientSearch" placeholder="Cari nama PT, ID rack, layanan..." oninput="renderClients()"></div>
           
           <select id="clientStatusFilter" class="form-input table-filter-select" onchange="setClientFilter(this.value)">
-            <option value="all">Semua Status</option><option value="Aktif">Aktif</option><option value="Jatuh tempo">Jatuh Tempo</option><option value="Suspend">Suspend</option><option value="Berhenti Langganan">Berhenti Langganan</option>
+            <option value="all">Semua Status</option><option value="Aktif">Aktif</option><option value="Hold">Hold</option><option value="Suspend">Suspend</option><option value="Berhenti Langganan">Terminate</option>
           </select>
           <div style="margin-left:auto;font-size:12px;color:var(--text-dim);font-family:var(--font-mono);" id="clientCountInfo">0 Klien</div>
         </div>
@@ -652,7 +652,7 @@
     <div class="modal-body">
       <div class="form-grid">
         <div class="form-group"><label>ID Rack Klien <span class="req">*</span></label><input id="c_id" class="form-input" placeholder="contoh: RCK-D01-01"></div>
-        <div class="form-group"><label>Status</label><select id="c_status" class="form-input"><option>Aktif</option><option>Jatuh tempo</option><option>Hold</option><option>Suspend</option><option>Berhenti Langganan</option><option>Prospek</option></select></div>
+        <div class="form-group"><label>Status</label><select id="c_status" class="form-input"><option>Aktif</option><option>Hold</option><option>Suspend</option><option>Berhenti Langganan</option></select></div>
         <div id="c_status_admin_note" style="display:none;font-size:10px;color:var(--orange);margin-top:4px;">⚠ Hanya Admin yang bisa mengubah status client (Aktif/Hold/Suspend/Jatuh Tempo/Berhenti Langganan)</div>
         <div class="form-group full"><label>Nama PT <span class="req">*</span></label><input id="c_pt" class="form-input" placeholder="PT Contoh Teknologi Indonesia"></div>
         <div class="form-group"><label>Layanan <span class="req">*</span></label><select id="c_layanan" class="form-input" onchange="onClientLayananChange()"><option>Colocation Full Rack</option><option>Colocation Half Rack</option><option>Colocation Quarter Rack</option><option>Colocation - Per U</option><option>Dedicated Server</option><option>Cloud Hosting</option><option>Cross Connect</option><option>Managed Service</option></select></div>
