@@ -36,9 +36,9 @@ function getTerminationAccessRemainingHours(client){
 }
 
 function enforceTerminationAccessCutoff(client){
-  if(!isTerminationAccessExpired(client) || client.status==='Berhenti Langganan') return false;
+  if(!isTerminationAccessExpired(client) || client.status==='Terminate') return false;
   const now = new Date().toISOString();
-  client.status='Berhenti Langganan';
+  client.status='Terminate';
   client.berhentiAt=now;
   client.terminatedAt=now;
   client.suspendAt=null;
@@ -228,13 +228,13 @@ function isClientJatuhTempo(){
 
 function isClientBerhenti(){
   const cl = getClientDataForCurrentUser();
-  return cl && cl.status==='Berhenti Langganan';
+  return cl && cl.status==='Terminate';
 }
 
 function isClientBlocked24h(){
   const cl = getClientDataForCurrentUser();
   if(!cl) return false;
-  if(cl.status!=='Berhenti Langganan') return false;
+  if(cl.status!=='Terminate') return false;
   if(!cl.berhentiAt) return false;
   try{
     const berhentiTime = new Date(cl.berhentiAt).getTime();
@@ -764,7 +764,7 @@ function applyRoleToUI(){
     }
   }
 
-  // Berhenti Langganan warning: countdown mundur 7 hari live timer
+  // Terminate warning: countdown mundur 7 hari live timer
   if(isClientBerhenti()){
     const remainingMs = getTerminationRemainingMs();
     const cl = getClientDataForCurrentUser();
@@ -1050,7 +1050,7 @@ function renderClients(){
     let badgeClass='ok';
     if(c.status==='Jatuh tempo') badgeClass='warn';
     if(c.status==='Suspend') badgeClass='crit';
-    if(c.status==='Berhenti Langganan') badgeClass='crit';
+    if(c.status==='Terminate') badgeClass='crit';
     if(c.status==='Prospek') badgeClass='info';
     clientsHtml += `
       <tr style="cursor:pointer;" onclick="openClientDetail('${escapeHtml(c.id)}')">
@@ -1117,10 +1117,10 @@ function openClientDetail(clientId){
   const aktifBerat = masuk.reduce((a,b)=>a + (getDeviceBerat(b) * (parseInt(b.jumlah)||1)), 0);
   const aktifUnits = masukUnits;
 
-  // Badge class untuk status termasuk Berhenti Langganan
+  // Badge class untuk status termasuk Terminate
   let statusBadgeClass='ok';
   if(client.status==='Jatuh tempo') statusBadgeClass='warn';
-  if(client.status==='Suspend' || client.status==='Berhenti Langganan') statusBadgeClass='crit';
+  if(client.status==='Suspend' || client.status==='Terminate') statusBadgeClass='crit';
   if(client.status==='Prospek') statusBadgeClass='info';
 
   // Format PIC badges
@@ -1140,7 +1140,7 @@ function openClientDetail(clientId){
     <div class="client-info" style="flex:1;">
       <h3 style="margin:0 0 6px;">${escapeHtml(client.pt)} <span class="badge ${statusBadgeClass}">${escapeHtml(client.status)}</span></h3>
       ${(() => {
-        if(client.status !== 'Berhenti Langganan') return '';
+        if(client.status !== 'Terminate') return '';
         const baseTime = client.berhentiAt || client.terminatedAt || client.terminateAccessEndsAt;
         if(!baseTime) return `<div style="margin-top:8px;background:rgba(226,75,74,0.12);border:1px solid rgba(226,75,74,0.3);border-radius:8px;padding:8px 10px;font-size:11.5px;color:#f09595;">⛔ Akun BERHENTI LANGGANAN - Ditentukan oleh Admin. Akses terbatas. Hubungi Admin untuk reaktivasi.</div>`;
         const sevenDaysMs = 7 * 24 * 60 * 60 * 1000;
@@ -1679,8 +1679,8 @@ function saveClient(){
     telp: document.getElementById('c_telp').value,
     maxBerat: parseFloat(document.getElementById('c_max_berat').value) || 173,
     ket: document.getElementById('c_ket').value,
-    berhentiAt: status==='Berhenti Langganan'
-      ? (oldClient?.status==='Berhenti Langganan' && oldClient.berhentiAt ? oldClient.berhentiAt : nowIso)
+    berhentiAt: status==='Terminate'
+      ? (oldClient?.status==='Terminate' && oldClient.berhentiAt ? oldClient.berhentiAt : nowIso)
       : null,
     suspendAt: status==='Suspend'
       ? (oldClient?.status==='Suspend' && oldClient.suspendAt ? oldClient.suspendAt : nowIso)
@@ -1696,7 +1696,7 @@ function saveClient(){
 
   // Record only the actual transition to stopped service; saving a contact
   // update must not reset the 24-hour access countdown.
-  if(status==='Berhenti Langganan' && oldClient?.status!=='Berhenti Langganan'){
+  if(status==='Terminate' && oldClient?.status!=='Terminate'){
     addClientLog(id, {tgl:nowIso.slice(0,10), status, by:currentUser?currentUser.email:'admin', at:nowIso});
   }
 
@@ -1708,7 +1708,7 @@ function saveClient(){
 
 function deleteClient(id){
   if(!isAdmin()){
-    alert('Hanya Admin yang bisa hapus Client. Status Berhenti Langganan juga hanya bisa ditentukan Admin.');
+    alert('Hanya Admin yang bisa hapus Client. Status Terminate juga hanya bisa ditentukan Admin.');
     return;
   }
   showCustomConfirm(`Hapus klien ${id} beserta semua perangkatnya?`, () => {
@@ -2348,7 +2348,7 @@ function openRackDetail(rackId){
       relatedClients.forEach(c => {
         let bc = 'ok';
         if (c.status === 'Jatuh tempo') bc = 'warn';
-        if (c.status === 'Suspend' || c.status === 'Hold' || c.status === 'Berhenti Langganan') bc = 'crit';
+        if (c.status === 'Suspend' || c.status === 'Hold' || c.status === 'Terminate') bc = 'crit';
 
         const rackLocations = (c.lokasi || '').split(',').map(s => s.trim()).filter(Boolean);
         const locsToRender = rackLocations.length > 0 ? rackLocations : [c.lokasi || '-'];
@@ -3838,7 +3838,7 @@ function openTicketModalWithType(type){
       showToast('Akun PT Anda berstatus SUSPEND. Anda hanya dapat melihat data (tidak dapat mengajukan tiket).', 'error');
       return;
     }
-    if (clData.status === 'Berhenti Langganan' || clData.status === 'Terminated') {
+    if (clData.status === 'Terminate' || clData.status === 'Terminated') {
       showToast('Akun PT Anda telah ditutup (Terminated). Tidak dapat mengajukan tiket.', 'error');
       return;
     }
@@ -4688,7 +4688,7 @@ function saveTicket(){
       alert('Akun PT Anda berstatus SUSPEND. Anda hanya dapat melihat data (tidak dapat mengajukan/mengubah tiket).');
       return;
     }
-    if(selectedClientData.status === 'Berhenti Langganan' || selectedClientData.status === 'Terminated') {
+    if(selectedClientData.status === 'Terminate' || selectedClientData.status === 'Terminated') {
       alert('Akun PT Anda telah ditutup (Terminated). Tidak dapat mengajukan/mengubah tiket.');
       return;
     }
@@ -5201,7 +5201,7 @@ function updateRoleBasedUI() {
     const ownClient = clients.find(c => c.id === currentUser.clientId);
     const btnSubmitTicket = document.getElementById('btnSubmitTicket');
     if (ownClient) {
-      if (ownClient.status === 'Suspend' || ownClient.status === 'Berhenti Langganan' || ownClient.status === 'Terminated') {
+      if (ownClient.status === 'Suspend' || ownClient.status === 'Terminate' || ownClient.status === 'Terminated') {
         if (btnSubmitTicket) btnSubmitTicket.style.setProperty('display', 'none', 'important');
       } else {
         if (btnSubmitTicket) btnSubmitTicket.style.setProperty('display', 'inline-flex', 'important');

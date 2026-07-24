@@ -68,9 +68,9 @@ function getBerhentiRemainingHours(client) {
 }
 
 function enforceTerminationAccessCutoff(client) {
-  if (!isTerminationAccessExpired(client) || client.status === 'Berhenti Langganan') return false;
+  if (!isTerminationAccessExpired(client) || client.status === 'Terminate') return false;
   const now = new Date().toISOString();
-  client.status = 'Berhenti Langganan';
+  client.status = 'Terminate';
   client.berhentiAt = now;
   client.terminatedAt = now;
   client.suspendAt = null;
@@ -120,7 +120,7 @@ loginForm.addEventListener('submit', async function(e) {
       
       if (clientData && isTerminationAccessExpired(clientData)) {
         // Enforce access cutoff
-        clientData.status = 'Berhenti Langganan';
+        clientData.status = 'Terminate';
         const nowIso = new Date().toISOString();
         clientData.berhentiAt = nowIso;
         clientData.terminatedAt = nowIso;
@@ -162,13 +162,13 @@ loginForm.addEventListener('submit', async function(e) {
         return;
       }
       
-      if (clientData && clientData.status === 'Berhenti Langganan' && clientData.berhentiAt) {
+      if (clientData && clientData.status === 'Terminate' && clientData.berhentiAt) {
         const berhentiTime = new Date(clientData.berhentiAt).getTime();
         const now = Date.now();
         const diffHours = (now - berhentiTime) / (1000 * 60 * 60);
         if (diffHours >= 24) {
           loginError.classList.add('show');
-          loginError.innerHTML = `⛔ Akun <b>${clientData.pt}</b> telah <b>Berhenti Langganan</b> sejak ${new Date(clientData.berhentiAt).toLocaleDateString('id-ID')} dan sudah melewati 1x24 jam. Akses portal ditutup. Hubungi Admin di support@interlink.co.id untuk reaktivasi.`;
+          loginError.innerHTML = `⛔ Akun <b>${clientData.pt}</b> telah <b>Terminate</b> sejak ${new Date(clientData.berhentiAt).toLocaleDateString('id-ID')} dan sudah melewati 1x24 jam. Akses portal ditutup. Hubungi Admin di support@interlink.co.id untuk reaktivasi.`;
           loginError.style.display = 'flex';
           return;
         }
@@ -209,7 +209,7 @@ loginForm.addEventListener('submit', async function(e) {
               alert(`⛔ Permintaan Terminate Anda telah disetujui Admin dan Support. Akses portal akan ditutup dalam sekitar ${hours} jam, pada hari ke-4 sejak pengajuan.`);
             }, 700);
           }
-          if (cl.status === 'Berhenti Langganan') {
+          if (cl.status === 'Terminate') {
             const remaining = getBerhentiRemainingHours(cl);
             if (remaining > 0) {
               setTimeout(() => {
