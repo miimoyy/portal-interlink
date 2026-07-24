@@ -1139,7 +1139,67 @@ function openClientDetail(clientId){
   document.getElementById('clientHeaderCard').innerHTML = `
     <div class="client-info" style="flex:1;">
       <h3 style="margin:0 0 6px;">${escapeHtml(client.pt)} <span class="badge ${statusBadgeClass}">${escapeHtml(client.status)}</span></h3>
-      ${client.status==='Berhenti Langganan' ? `<div style="margin-top:8px;background:rgba(226,75,74,0.12);border:1px solid rgba(226,75,74,0.3);border-radius:8px;padding:8px 10px;font-size:11.5px;color:#f09595;">⛔ Akun BERHENTI LANGGANAN - Ditentukan oleh Admin. Akses terbatas. Hubungi Admin untuk reaktivasi.</div>` : ''}
+      ${(() => {
+        if(client.status !== 'Berhenti Langganan') return '';
+        const baseTime = client.berhentiAt || client.terminatedAt || client.terminateAccessEndsAt;
+        if(!baseTime) return `<div style="margin-top:8px;background:rgba(226,75,74,0.12);border:1px solid rgba(226,75,74,0.3);border-radius:8px;padding:8px 10px;font-size:11.5px;color:#f09595;">⛔ Akun BERHENTI LANGGANAN - Ditentukan oleh Admin. Akses terbatas. Hubungi Admin untuk reaktivasi.</div>`;
+        const sevenDaysMs = 7 * 24 * 60 * 60 * 1000;
+        const baseTs = new Date(baseTime).getTime();
+        const deadlineTs = baseTs + sevenDaysMs;
+        const msLeft = Math.max(0, deadlineTs - Date.now());
+        const uid = 'cd_' + client.id.replace(/[^a-zA-Z0-9]/g,'_');
+        const deadlineStr = new Date(deadlineTs).toLocaleString('id-ID');
+        const pad = n => String(n).padStart(2,'0');
+        const totalSec = Math.floor(msLeft / 1000);
+        const initD = Math.floor(totalSec / 86400);
+        const initH = Math.floor((totalSec % 86400) / 3600);
+        const initM = Math.floor((totalSec % 3600) / 60);
+        const initS = totalSec % 60;
+        setTimeout(() => {
+          if(window['_cdInterval_' + uid]) { clearInterval(window['_cdInterval_' + uid]); }
+          window['_cdInterval_' + uid] = setInterval(() => {
+            const rem = Math.max(0, deadlineTs - Date.now());
+            const sec = Math.floor(rem / 1000);
+            const dEl = document.getElementById(uid + '_d');
+            const hEl = document.getElementById(uid + '_h');
+            const mEl = document.getElementById(uid + '_m');
+            const sEl = document.getElementById(uid + '_s');
+            if(!dEl) { clearInterval(window['_cdInterval_' + uid]); return; }
+            const p = n => String(n).padStart(2,'0');
+            dEl.textContent = Math.floor(sec / 86400);
+            hEl.textContent = p(Math.floor((sec % 86400) / 3600));
+            mEl.textContent = p(Math.floor((sec % 3600) / 60));
+            sEl.textContent = p(sec % 60);
+            if(rem <= 0) { clearInterval(window['_cdInterval_' + uid]); }
+          }, 1000);
+        }, 0);
+        return `<div style="margin-top:10px;background:rgba(185,28,28,0.14);border:1px solid rgba(226,75,74,0.35);border-radius:10px;padding:10px 14px;display:flex;align-items:center;gap:14px;flex-wrap:wrap;">
+          <div style="display:flex;align-items:center;gap:6px;font-size:12px;font-weight:700;color:#f87171;">⛔ AKUN TERMINATE</div>
+          <div style="font-size:11px;color:rgba(248,113,113,0.8);">Akses otomatis ditutup pada: <b style="color:#fca5a5;">${deadlineStr}</b></div>
+          <div style="display:flex;align-items:center;gap:4px;margin-left:auto;">
+            <span style="font-size:11px;color:rgba(255,255,255,0.5);margin-right:4px;">Sisa:</span>
+            <div style="background:rgba(0,0,0,0.3);border:1px solid rgba(226,75,74,0.3);border-radius:6px;padding:3px 8px;text-align:center;min-width:36px;">
+              <div id="${uid}_d" style="font-size:16px;font-weight:700;line-height:1;font-family:monospace;color:#f87171;">${initD}</div>
+              <div style="font-size:8px;color:rgba(255,255,255,0.45);margin-top:1px;">HARI</div>
+            </div>
+            <span style="font-size:13px;font-weight:700;color:rgba(248,113,113,0.5);">:</span>
+            <div style="background:rgba(0,0,0,0.3);border:1px solid rgba(226,75,74,0.3);border-radius:6px;padding:3px 8px;text-align:center;min-width:36px;">
+              <div id="${uid}_h" style="font-size:16px;font-weight:700;line-height:1;font-family:monospace;color:#f87171;">${pad(initH)}</div>
+              <div style="font-size:8px;color:rgba(255,255,255,0.45);margin-top:1px;">JAM</div>
+            </div>
+            <span style="font-size:13px;font-weight:700;color:rgba(248,113,113,0.5);">:</span>
+            <div style="background:rgba(0,0,0,0.3);border:1px solid rgba(226,75,74,0.3);border-radius:6px;padding:3px 8px;text-align:center;min-width:36px;">
+              <div id="${uid}_m" style="font-size:16px;font-weight:700;line-height:1;font-family:monospace;color:#f87171;">${pad(initM)}</div>
+              <div style="font-size:8px;color:rgba(255,255,255,0.45);margin-top:1px;">MENIT</div>
+            </div>
+            <span style="font-size:13px;font-weight:700;color:rgba(248,113,113,0.5);">:</span>
+            <div style="background:rgba(0,0,0,0.3);border:1px solid rgba(226,75,74,0.3);border-radius:6px;padding:3px 8px;text-align:center;min-width:36px;">
+              <div id="${uid}_s" style="font-size:16px;font-weight:700;line-height:1;font-family:monospace;color:#f87171;">${pad(initS)}</div>
+              <div style="font-size:8px;color:rgba(255,255,255,0.45);margin-top:1px;">DETIK</div>
+            </div>
+          </div>
+        </div>`;
+      })()}
       ${client.status==='Suspend' ? `<div style="margin-top:8px;background:rgba(226,75,74,0.12);border:1px solid rgba(226,75,74,0.3);border-radius:8px;padding:8px 10px;font-size:11.5px;color:#f09595;">⚠ Akun SUSPEND - Ditentukan oleh Admin. Segera hubungi Admin.</div>` : ''}
       ${client.status==='Jatuh tempo' ? `<div style="margin-top:8px;background:rgba(186,117,23,0.12);border:1px solid rgba(186,117,23,0.3);border-radius:8px;padding:8px 10px;font-size:11.5px;color:#ef9f27;">⏰ Akun JATUH TEMPO - Mohon segera lakukan pembayaran. Ditentukan oleh Admin.</div>` : ''}
       <div class="client-sub">
