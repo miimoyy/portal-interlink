@@ -1,0 +1,14 @@
+# Dependency directories
+node_modules/
+
+# Database files
+data.db
+*.db-journal
+
+# Test results & reports
+test-results/
+playwright-report/
+
+# Environment files
+.env
+.env.local

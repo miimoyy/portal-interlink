@@ -1,0 +1,1001 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Interlink Data Center</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@500;600;700&family=Inter:wght@400;500;600&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="css/dashboard.css">
+</head>
+<body>
+
+<!-- LOGIN - SIMPLE COMPACT NO SCROLL - MATCH SCREENSHOT -->
+<div id="login-screen" style="display: none;">
+  <div class="line-field" id="login-lines"></div>
+  <div class="lv-orb o1"></div><div class="lv-orb o2"></div><div class="lv-orb o3"></div>
+  <div class="login-wrap">
+    <form class="login-card" id="login-form" autocomplete="off">
+      <div class="login-portal-word">PORTAL</div>
+      <div class="card-brand">
+        <div class="brand-mark"><span class="il">INTER</span><span class="link">LINK</span></div>
+        <span class="brand-sub">DATA CENTER</span>
+      </div>
+      <div class="login-card-icon">🔐</div>
+      <div class="login-card-eyebrow">FASILITAS DATA CENTER TIER-III - JAKARTA</div>
+      <h1>Login</h1>
+      <div class="login-error" id="login-error">⚠ Email atau kata sandi salah. Coba lagi.</div>
+      <div class="field"><label for="email">Email</label><div class="field-input-wrap"><span class="fi-icon">✉</span><input type="text" id="email" placeholder="nama@interlink.co.id"></div></div>
+      <div class="field"><label for="password">Kata sandi</label><div class="field-input-wrap login-password-field"><span class="fi-icon">🔒</span><input type="password" id="password" placeholder="Masukkan kata sandi"><button type="button" id="loginPasswordToggle" class="login-password-toggle" title="Lihat kata sandi" onclick="toggleLoginPassword()"><svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M17.94 17.94A10.07 10.07 0 0112 20c-7 0-11-8-11-8a18.45 18.45 0 015.06-5.94M9.9 4.24A9.12 9.12 0 0112 4c7 0 11 8 11 8a18.5 18.5 0 01-2.16 3.19m-6.72-1.07a3 3 0 11-4.24-4.24"/><line x1="1" y1="1" x2="23" y2="23"/></svg></button></div></div>
+      <div class="field-row"><label class="remember"><input type="checkbox" id="rememberMe"> Remember Me</label></div>
+      <button type="submit" class="btn-primary">Login</button>
+      <div class="login-divider">AKSES AMAN • ENKRIPSI END-TO-END</div>
+      <p class="footer-note">Butuh akun? Hubungi admin fasilitas Anda di<br><b>[email protected]</b></p>
+    </form>
+    <div class="demo-accounts-compact">
+      <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:8px;">
+        <span style="font-size:11px;font-weight:600;color:#fff;">🔑 Demo Akun</span>
+        <span style="font-size:10px;color:var(--text-dim);font-family:var(--font-mono);">klik untuk isi otomatis</span>
+      </div>
+      <div style="display:flex;gap:6px;flex-wrap:wrap;">
+        <button type="button" class="demo-pill admin" onclick="fillDemoCredentials('admin@interlink.co.id')">ADMIN</button>
+        <button type="button" class="demo-pill support" onclick="fillDemoCredentials('support@interlink.co.id')">SUPPORT</button>
+        <button type="button" class="demo-pill client" onclick="fillDemoCredentials('client.nusantara@pt.com')">CLIENT</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- DASHBOARD -->
+<div id="dashboard-screen" style="display: none;">
+  <div class="topbar">
+    <div class="topbar-left"><div class="brand-mark"><span class="il">INTER</span><span class="link">LINK</span></div><div class="nav-links"><a id="navHome" href="#" onclick="openTopNavPage('home'); return false;">Home</a><a id="navDashboard" href="#" class="active" onclick="openTopNavPage('dashboard'); return false;">Dashboard</a><a id="navContact" href="#" onclick="openTopNavPage('contact'); return false;">Contact Us</a></div></div>
+    <div class="topbar-right">
+      <div class="icon-pill i1" title="Profil Saya" onclick="document.querySelector('[data-page=profile]').click()" style="cursor:pointer;">🧑</div>
+      <div class="icon-pill i3" title="Kontak NOC / Support" onclick="openTopbarModal('contact')" style="cursor:pointer;">📱</div>
+      <button type="button" class="notification-btn" id="notificationBtn" onclick="openTopbarModal('notifications')" title="Notifikasi" style="display:none;">🔔<span id="notificationBadge" class="notification-badge" style="display:none;">0</span></button>
+      <button type="button" class="logout-btn" id="logout-btn" onclick="logoutUser()">Logout</button>
+    </div>
+  </div>
+  <div class="subnav">
+    <div class="subnav-item active" data-page="overview">▦ Overview</div>
+    <div class="subnav-item" data-page="racks">🗄 Racks</div>
+    <div class="subnav-item" data-page="inventory">📦 Inventory</div>
+    <div class="subnav-item" data-page="tickets">🎫 Tickets <span id="ticketNavBadge" class="ticket-tab-badge" style="display:none;">0</span></div>
+    <div class="subnav-item" data-page="crossconnect">🔗 CrossConnect</div>
+    <div class="subnav-item" data-page="account-management" id="accountManagementNav" style="display:none;">👥 Manajemen Akun</div>
+    <div class="subnav-item" data-page="subaccount" id="subAccountNav" style="display:none;">👥 Sub-Account</div>
+    <div class="subnav-item" data-page="profile">👤 Profile</div>
+  </div>
+
+  <section class="page active" id="page-overview">
+  <div class="hero"><div class="line-field" id="hero-lines"></div><!-- Real-time auth badge removed per request -->
+    <div class="clock-card"><div class="clock-time" id="clock-time">--:--:--</div><div class="clock-date" id="clock-date">-</div><div class="clock-tz">WIB · GMT+7</div></div>
+    <!-- Arrows removed per request -->
+    <div class="hero-center"><div class="hero-eyebrow">Fasilitas data center tier-III · Jakarta</div><div class="hero-title">Akses aman, uptime terjamin — pantau seluruh operasional data center Anda dari satu dashboard.</div></div>
+    <div class="rack-strip"><div class="rack"><div class="bar c"></div><div class="bar o"></div></div><div class="rack"><div class="bar o"></div><div class="bar c"></div></div><div class="rack"><div class="bar c"></div><div class="bar o"></div></div><div class="rack"><div class="bar o"></div></div><div class="rack"><div class="bar c"></div><div class="bar o"></div></div><div class="rack"><div class="bar o"></div><div class="bar c"></div></div><div class="rack"><div class="bar c"></div><div class="bar o"></div></div></div>
+    <!-- Hero slide indicators removed -->
+  </div>
+  <div class="below-hero">
+    <div class="stat-card" id="statRackCard"><div class="stat-label">Rack aktif</div><div class="stat-value" id="statRackAktif">128<span style="font-size:14px;color:var(--text-dim);">/140</span></div><div class="stat-sub" id="statRackSub">Kondisi rack operasional</div></div>
+    <div class="stat-card"><div class="stat-label">Uptime fasilitas</div><div class="stat-value cyan" id="statUptime">99.98%</div><div class="stat-sub" id="statUptimeSub">30 hari terakhir</div></div>
+    <div class="stat-card"><div class="stat-label">Tiket terbuka</div><div class="stat-value orange" id="statTiket">7</div><div class="stat-sub" id="statTiketSub">2 prioritas tinggi</div></div>
+    <div class="stat-card"><div class="stat-label">CrossConnect aktif</div><div class="stat-value" id="statXC">342</div><div class="stat-sub" id="statXCSub">+12 minggu ini</div></div>
+  </div>
+  </section>
+
+  <section class="page" id="page-racks">
+    <!-- LIST VIEW -->
+    <div id="racks-list-view">
+      <div class="page-header">
+        <div>
+          <h2>Racks</h2>
+          <p>Status kapasitas dan kondisi tiap rack di lantai fasilitas. Klik card untuk detail, tambah, edit, hapus.</p>
+        </div>
+        <div style="display:flex;gap:10px;align-items:center;"><button class="page-action secondary" id="btnAddFloor" onclick="openFloorModal()" style="display:none;">+ Tambah Lantai</button><button class="page-action" id="btnAddRack" onclick="openRackInfoModal()" style="display:none;">+ Tambah rack</button></div>
+      </div>
+      <div class="page-body">
+                <div class="inventory-toolbar">
+          <div class="search-box"><span>🔍</span><input type="text" id="rackSearch" placeholder="Cari ID rack, lokasi..." oninput="renderRacks()"></div>
+          <select id="rackFloorFilter" class="form-input rack-filter-select" onchange="setGlobalFloorFilter(this.value)"><option value="all">Semua Lantai</option></select>
+          <select id="rackStatusFilter" class="form-input rack-filter-select" style="display:none;" onchange="setRackFilter(this.value)"><option value="all">-</option><option value="Aktif">Aktif</option><option value="Proses">Proses</option><option value="Hold">Hold</option><option value="Terminate">Terminate</option></select>
+          <select id="rackTypeFilter" class="form-input rack-filter-select" onchange="currentRackTypeFilter=this.value; renderRacks()"><option value="all">-</option><option value="Open Rack">Open Rack</option><option value="Close Rack">Close Rack</option></select>
+          <button class="page-action secondary rack-reset-filter" onclick="resetRackFilters()">↺ Reset Filter</button>
+          <div style="margin-left:auto;font-size:12px;color:var(--text-dim);font-family:var(--font-mono);" id="rackCountInfo">0 Rack</div>
+        </div>
+        <div id="clientRackBigDisplay" class="client-rack-summary-wrap" style="display:none;">
+          <div class="client-rack-summary" aria-label="Ringkasan rack Anda">
+            <div class="client-rack-summary-item">
+              <div class="client-summary-icon">🗄️</div>
+              <div><div class="client-summary-label">Rack Disewa</div><div class="client-summary-value"><span id="clientRackBigNumber">0</span><small>Rack Aktif</small></div></div>
+            </div>
+            <div id="clientRackUtilBig" class="client-rack-summary-item" style="display:none;">
+              <div class="client-summary-icon">📊</div>
+              <div><div class="client-summary-label">Beban Total Rack</div><div class="client-summary-value"><span id="clientRackUtilNumber">0%</span></div></div>
+            </div>
+            <div id="clientRackBigSub" class="client-summary-note">Ringkasan rack aktif Anda</div>
+          </div>
+        </div>
+        <div class="rack-grid" id="rackGrid"></div>
+      </div>
+    </div>
+
+    <!-- DETAIL VIEW -->
+    <div id="racks-detail-view" style="display:none;">
+      <div style="padding:28px 32px 0;">
+        <button class="detail-back" onclick="closeRackDetail()">‹ Kembali ke Daftar Rack</button>
+        <div class="client-header-card" id="rackHeaderCard"></div>
+        <div style="margin-top:18px;display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:12px;" id="rackDetailStats"></div>
+      </div>
+      <div class="page-body">
+        <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:14px;flex-wrap:wrap;gap:10px;">
+          <h3 style="font-family:var(--font-display);font-size:16px;color:#fff;">Klien & Perangkat di Rack ini</h3>
+          <div style="display:flex;gap:8px;flex-wrap:wrap;">
+            <button id="btnEditRackDetail" class="page-action secondary" style="height:38px;font-size:12.5px;" onclick="editCurrentRack()">✏️ Edit Rack</button>
+            <button id="btnKelolaPTDetail" class="page-action" style="height:38px;font-size:12.5px;" onclick="openAddRackModal(); switchRackTab('info');">🏢 Kelola PT (Tambah/Ganti/Pindah)</button>
+            <button id="btnDeleteRackDetail" class="page-action secondary" style="height:38px;font-size:12.5px;" onclick="deleteCurrentRack()">🗑 Hapus</button>
+          </div>
+        </div>
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:16px;" class="rack-detail-grid">
+          <div class="table-wrap">
+            <div style="padding:12px 16px;border-bottom:1px solid var(--border);font-weight:600;color:#fff;font-size:13px;display:flex;justify-content:space-between;"><span>📦 Klien di Rack</span><span id="rackClientCount" class="badge info">0</span></div>
+            <div style="max-height:150px;overflow-y:auto;overflow-x:auto;">
+              <table class="data-table" style="min-width:500px;">
+                <thead><tr><th>ID Rack Klien</th><th>Nama PT</th><th>Lantai</th><th>Layanan</th><th>Status</th></tr></thead>
+                <tbody id="rackClientTable"></tbody>
+              </table>
+            </div>
+          </div>
+          <div class="table-wrap">
+            <div style="padding:12px 16px;border-bottom:1px solid var(--border);font-weight:600;color:#fff;font-size:13px;display:flex;justify-content:space-between;align-items:center;">
+              <span>🔧 Perangkat Aktif</span>
+              <div style="display:flex;gap:8px;align-items:center;">
+                <span id="rackDeviceCount" class="badge cyan">0</span>
+                <button id="btnExportRackExcel" class="page-action secondary" style="height:28px;font-size:11px;padding:0 10px;display:none;" onclick="exportRackActiveToExcel()" title="Export ke Excel untuk surat pengajuan barang ke gedung (khusus Admin/Support)">📊 Export Excel / Surat Barang</button>
+              </div>
+            </div>
+            <div style="max-height:150px;overflow-y:auto;overflow-x:auto;">
+              <table class="data-table" style="min-width:650px;">
+                <thead><tr><th>Kategori</th><th>Nama Perangkat</th><th>Klien</th><th>SN</th><th>JML</th><th>Kondisi</th><th>Tgl Masuk</th></tr></thead>
+                <tbody id="rackDeviceTable"></tbody>
+              </table>
+            </div>
+          </div>
+        </div>
+        <div style="margin-top:16px;" class="table-wrap">
+          <div style="padding:12px 16px;border-bottom:1px solid var(--border);font-weight:600;color:#fff;font-size:13px;">📊 Riwayat Perangkat Keluar dari Rack ini</div>
+          <div style="max-height:150px;overflow-y:auto;overflow-x:auto;">
+            <table class="data-table" style="min-width:650px;">
+              <thead><tr><th>Nama Perangkat</th><th>Klien</th><th>Tgl Masuk</th><th>Tgl Keluar</th><th>Alasan</th></tr></thead>
+              <tbody id="rackHistoryTable"></tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- INVENTORY - UPGRADED -->
+  <section class="page" id="page-inventory">
+    <!-- LIST VIEW -->
+    <div id="inventory-list-view">
+      <div class="page-header">
+        <div>
+          <h2>Inventory Client & Perangkat</h2>
+          <p>Kelola klien, perangkat masuk/keluar beserta tanggal. Klik nama PT untuk melihat detail perangkat.</p>
+        </div>
+        <div style="display:flex;gap:10px;">
+          <button class="page-action secondary" id="btnExportData" onclick="exportData()" style="display:none;">📄 Export PDF</button>
+          <button class="page-action" id="btnAddClient" onclick="openAddClientModal()" style="display:none;">+ Tambah Klien Baru</button>
+        </div>
+      </div>
+      <div class="page-body">
+        <div class="inventory-toolbar">
+          <div class="search-box"><span>🔍</span><input type="text" id="clientSearch" placeholder="Cari nama PT, ID rack, layanan..." oninput="renderClients()"></div>
+          
+          <select id="clientStatusFilter" class="form-input table-filter-select" onchange="setClientFilter(this.value)">
+            <option value="all">Semua Status</option><option value="Aktif">Aktif</option><option value="Jatuh tempo">Jatuh Tempo</option><option value="Suspend">Suspend</option><option value="Berhenti Langganan">Berhenti Langganan</option>
+          </select>
+          <div style="margin-left:auto;font-size:12px;color:var(--text-dim);font-family:var(--font-mono);" id="clientCountInfo">0 Klien</div>
+        </div>
+        <div id="inventoryFloorFilterIndicator" class="global-floor-indicator" style="display:none;"></div>
+        <div class="table-wrap">
+          <table class="data-table">
+            <thead><tr><th>ID Rack Klien</th><th>Nama PT</th><th>Layanan</th><th>Daya (A)</th><th>Lokasi</th><th>📥 Masuk</th><th>📤 Keluar</th><th>Aktif di DC</th><th>Status</th><th id="thClientAksi">Aksi</th></tr></thead>
+            <tbody id="clientTableBody"></tbody>
+          </table>
+        </div>
+        <div style="margin-top:12px;font-size:11.5px;color:var(--text-dim);">💡 Tips: Klik <b style="color:var(--text-mid)">baris mana saja</b> untuk melihat detail perangkat. Data tersimpan otomatis di server database.</div>
+      </div>
+    </div>
+
+    <!-- DETAIL VIEW -->
+    <div id="inventory-detail-view">
+      <div style="padding:28px 32px 0;">
+        <button class="detail-back" onclick="closeClientDetail()">‹ Kembali ke Daftar Klien</button>
+        <div class="client-header-card" id="clientHeaderCard">
+          <!-- filled by JS -->
+        </div>
+
+        <div class="device-tabs" id="deviceTabs">
+          <div class="device-tab active" data-tab="masuk" onclick="switchDeviceTab('masuk')">📥 Perangkat Masuk <span class="dt-count" id="countMasuk">0</span></div>
+          <div class="device-tab" data-tab="keluar" onclick="switchDeviceTab('keluar')">📤 Perangkat Keluar <span class="dt-count" id="countKeluar">0</span></div>
+        </div>
+
+        <div class="device-toolbar">
+          <div class="device-toolbar-left">
+            <div style="position:relative;flex:1;max-width:340px;">
+              <span style="position:absolute;left:12px;top:50%;transform:translateY(-50%);color:var(--text-dim);">🔍</span>
+              <input type="text" id="deviceSearch" placeholder="Cari perangkat, SN, kategori..." oninput="renderDevices()" style="width:100%;padding-left:36px;">
+            </div>
+            <select id="deviceKategoriFilter" onchange="renderDevices()" style="height:40px;background:var(--surface);border:1px solid var(--border);border-radius:9px;color:var(--text);padding:0 12px;font-size:12.5px;">
+              <option value="all">Semua Kategori</option>
+              <option>Server</option><option>Storage</option><option>Switch</option><option>Router</option><option>Firewall</option><option>Patch Panel</option><option>Kabel Fiber</option><option>Modul / Transceiver</option><option>OTB</option><option>UPS / PDU</option><option>Lainnya</option>
+            </select>
+          </div>
+          <div style="display:flex;gap:10px;">
+            <button class="page-action secondary" onclick="openTicketModalWithType('Keluar Barang')" id="btnAddKeluar" style="display:none;">+ Catat Keluar (Pilih dari Masuk)</button>
+            <button class="page-action" onclick="quickAddDevice()" id="btnAddDevice" style="display:none;">+ Tambah Perangkat Masuk</button>
+          </div>
+        </div>
+      </div>
+
+      <div class="page-body" style="padding-top:12px;">
+        <div class="table-wrap" id="deviceTableWrap">
+          <table class="data-table">
+            <thead id="deviceTableHead"></thead>
+            <tbody id="deviceTableBody"></tbody>
+          </table>
+        </div>
+        <div id="deviceEmptyState" class="device-empty" style="display:none;">
+          <h4 id="emptyTitle">Belum ada perangkat</h4>
+          <p id="emptyDesc">Perangkat yang masuk atau keluar untuk klien ini akan tampil disini. Klik tambah untuk input pertama.</p>
+          <button class="page-action" onclick="quickAddDevice()" style="margin:0 auto;">+ Tambah Sekarang</button>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <section class="page" id="page-tickets">
+    <div id="tickets-list-view">
+      <div class="page-header">
+        <div>
+          <h2>Tickets - CrossConnect & Barang</h2>
+          <p>Kelola tiket CrossConnect, Masuk Barang, Keluar Barang, dan Permintaan Terminate. Terhubung dengan Inventory & Racks.</p>
+        </div>
+        <div style="display:flex;gap:10px;align-items:center;flex-wrap:wrap;">
+          <button id="btnExportTicketsPdf" class="page-action secondary" onclick="exportTicketsPdf()" style="display:none;">📄 Export PDF</button>
+          <button class="page-action" onclick="openTicketModal()">🎫 Submit a ticket</button>
+        </div>
+      </div>
+      <div class="page-body">
+        <div class="inventory-toolbar">
+          <div class="search-box"><span>🔍</span><input type="text" id="ticketSearch" placeholder="Cari ID tiket, judul, PT, rack..." oninput="renderTickets()"></div>
+
+          <div id="ticketDropdownFilters" style="display:flex;gap:8px;align-items:center;">
+            <select id="ticketTypeFilterSelect" class="form-input table-filter-select" onchange="setTicketFilter(this.value)"><option value="all">Semua Tipe</option><option value="CrossConnect">CrossConnect</option><option value="Masuk Barang">Masuk Barang</option><option value="Keluar Barang">Keluar Barang</option><option value="Permintaan Terminate">Terminate</option></select>
+            <select id="ticketStatusFilterSelect" class="form-input table-filter-select" onchange="setTicketStatusFilter(this.value)"><option value="all">Semua Status</option><option value="Diproses">Diproses</option><option value="Menunggu Approval">Menunggu Approval</option><option value="Disetujui">Disetujui</option><option value="Selesai">Selesai</option><option value="Dibatalkan">Dibatalkan</option></select>
+          </div>
+          <!-- Untuk Client: jadi dropdown pilihan, tanpa tombol Semua -->
+          <div id="ticketClientDropdowns" style="display:none;gap:8px;align-items:center;">
+            <select id="ticketTypeClientSelect" class="form-input" style="height:36px;min-width:160px;" onchange="setTicketFilter(this.value)">
+              <option value="" disabled selected>Pilih Tipe Tiket</option>
+              <option value="CrossConnect">🔗 CrossConnect</option>
+              <option value="Masuk Barang">📥 Masuk Barang</option>
+              <option value="Keluar Barang">📤 Keluar Barang</option>
+              <option value="Permintaan Terminate">⛔ Permintaan Terminate</option>
+            </select>
+            <select id="ticketStatusClientSelect" class="form-input" style="height:36px;min-width:140px;" onchange="setTicketStatusFilter(this.value)">
+              <option value="" disabled selected>Pilih Status</option>
+              <option value="Diproses">Diproses</option>
+              <option value="Menunggu Approval">Menunggu Approval</option>
+              <option value="Dibatalkan">Dibatalkan</option>
+              <option value="Selesai">Selesai</option>
+            </select>
+            <button class="page-action secondary" style="height:36px;font-size:11px;" onclick="setTicketFilter('all'); setTicketStatusFilter('all'); document.getElementById('ticketTypeClientSelect').selectedIndex=0; document.getElementById('ticketStatusClientSelect').selectedIndex=0;">↺ Reset</button>
+          </div>
+          <div style="margin-left:auto;font-size:12px;color:var(--text-dim);font-family:var(--font-mono);" id="ticketCountInfo">0 Tiket</div>
+        </div>
+        <div id="ticketsFloorFilterIndicator" class="global-floor-indicator" style="display:none;"></div>
+        <div class="ticket-list" id="ticketList"></div>
+        <div id="ticketEmpty" style="display:none;text-align:center;padding:48px 20px;border:1px dashed var(--border-hi);border-radius:12px;background:rgba(255,255,255,0.02);">
+          <h4 style="color:#fff;font-family:var(--font-display);margin-bottom:8px;">Belum ada tiket</h4>
+          <p style="color:var(--text-mid);font-size:13px;max-width:420px;margin:0 auto 16px;line-height:1.5;">Tiket CrossConnect, Masuk Barang, Keluar Barang, dan Permintaan Terminate akan tampil di sini. Klik Submit a ticket untuk buat baru.</p>
+          <button class="page-action" onclick="openTicketModal()" style="margin:0 auto;">🎫 Buat Tiket Pertama</button>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <section class="page" id="page-crossconnect">
+    <div id="crossconnect-list-view">
+      <div class="page-header">
+        <div>
+          <h2>CrossConnect - Terhubung Tiket</h2>
+          <p>Koneksi silang antar rack dan penyedia jaringan eksternal. Data nyambung otomatis dari Tiket CrossConnect yang Selesai. Klik baris untuk detail.</p>
+        </div>
+        <div style="display:flex;gap:10px;">
+          <button class="page-action secondary" id="btnExportCrossConnectPdf" onclick="exportCrossConnects()" style="display:none;">📄 Export PDF</button>
+        </div>
+      </div>
+      <div class="page-body">
+        <div class="inventory-toolbar">
+          <div class="search-box"><span>🔍</span><input type="text" id="xcSearch" placeholder="Cari ID, titik A/B, PT, status..." oninput="renderCrossConnects()"></div>
+          <div class="filter-chips">
+            <button class="chip active" data-xcfilter="all" onclick="setCrossConnectFilter('all')">Semua</button>
+            <button class="chip" data-xcfilter="Aktif" onclick="setCrossConnectFilter('Aktif')">Aktif</button>
+            <button class="chip" data-xcfilter="Dalam proses" onclick="setCrossConnectFilter('Dalam proses')">Dalam Proses</button>
+            <button class="chip" data-xcfilter="Nonaktif" onclick="setCrossConnectFilter('Nonaktif')">Nonaktif</button>
+          </div>
+          <div style="margin-left:auto;font-size:12px;color:var(--text-dim);font-family:var(--font-mono);" id="xcCountInfo">0 Koneksi</div>
+        </div>
+        <div id="crossconnectFloorFilterIndicator" class="global-floor-indicator" style="display:none;"></div>
+        <div class="table-wrap">
+          <table class="data-table">
+            <thead><tr><th>ID / REQ ID</th><th>PT / Client</th><th>Titik A</th><th>Titik B</th><th>📏 Panjang Kabel</th><th>Jenis</th><th>Status</th><th id="thXcAksi">Aksi</th></tr></thead>
+            <tbody id="xcTableBody"></tbody>
+          </table>
+        </div>
+        <div style="margin-top:12px;font-size:11.5px;color:var(--text-dim);">💡 Tips: Klik baris untuk lihat detail & tiket terkait. Untuk mengajukan koneksi baru, buat <b style="color:var(--text-mid);">Ticket CrossConnect</b> melalui menu Tickets. Koneksi akan muncul di sini setelah tiket diselesaikan.</div>
+      </div>
+    </div>
+
+    <!-- DETAIL VIEW -->
+    <div id="crossconnect-detail-view" style="display:none;">
+      <div style="padding:28px 32px 0;">
+        <button class="detail-back" onclick="closeCrossConnectDetail()">‹ Kembali ke Daftar CrossConnect</button>
+        <div class="client-header-card" id="xcHeaderCard"></div>
+      </div>
+      <div class="page-body">
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:16px;">
+          <div class="table-wrap">
+            <div style="padding:12px 16px;border-bottom:1px solid var(--border);font-weight:600;color:#fff;font-size:13px;" id="xcDetailTitle">🔗 Detail Koneksi</div>
+            <div id="xcDetailInfo" style="padding:16px;"></div>
+          </div>
+          <div class="table-wrap">
+            <div style="padding:12px 16px;border-bottom:1px solid var(--border);font-weight:600;color:#fff;font-size:13px;display:flex;justify-content:space-between;"><span>🎫 Tiket Terkait</span><span id="xcTicketCount" class="badge info">0</span></div>
+            <div id="xcRelatedTickets" style="padding:12px;display:flex;flex-direction:column;gap:8px;"></div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <section class="page" id="page-account-management">
+    <div class="page-header"><div><h2>Manajemen Akun</h2><p>Kelola akun Admin, Support, dan Client yang dapat mengakses portal.</p></div><button type="button" class="account-primary-button" onclick="openAccountModal()">+ Tambah Akun Baru</button></div>
+    <div class="page-body">
+      <section id="accountManagementSection" class="account-management-section" style="display:none;" aria-labelledby="accountManagementTitle">
+        <div class="account-management-filters">
+          <input id="accountFilterSearch" class="form-input" placeholder="Cari nama atau email..." oninput="renderAccountManagement()">
+          <select id="accountFilterPT" class="form-input" onchange="renderAccountManagement()"><option value="all">Semua PT</option></select>
+          <select id="accountFilterRole" class="form-input" onchange="renderAccountManagement()"><option value="all">Semua Role</option><option value="admin">Admin</option><option value="support">Support</option><option value="client">Client</option></select>
+          <button type="button" class="page-action secondary" onclick="resetAccountFilters()">↺ Reset Filter</button>
+        </div>
+        <div class="table-wrap account-management-table-wrap">
+          <table class="data-table account-management-table"><thead><tr><th>Nama</th><th>Password</th><th>Email</th><th>Role</th><th>Client / PT</th><th>Telepon</th><th>Aksi</th></tr></thead><tbody id="accountManagementTableBody"></tbody></table>
+        </div>
+        <div id="accountManagementEmpty" class="account-management-empty" style="display:none;">Tidak ada akun yang cocok dengan filter.</div>
+      </section>
+    </div>
+  </section>
+
+    
+  <section class="page" id="page-subaccount" style="display:none;">
+    <div class="page-header">
+      <div><h2>Sub-Account</h2><p>Kelola sub-account (akses terbatas) untuk tim internal Anda.</p></div>
+      <button type="button" class="account-primary-button" onclick="openSubAccountModal()">+ Tambah Sub-Account</button>
+    </div>
+    <div class="page-body">
+      <div class="table-wrap account-management-table-wrap">
+        <table class="data-table">
+          <thead><tr><th>Nama</th><th>Email</th><th>Role</th><th>Aksi</th></tr></thead>
+          <tbody id="subAccountTableBody"></tbody>
+        </table>
+      </div>
+    </div>
+  </section>
+  
+  <!-- MODAL SUB-ACCOUNT -->
+  <div class="modal-overlay" id="modalSubAccount">
+    <div class="modal-card">
+      <div class="modal-head"><h3 id="subAccountModalTitle">👤 Tambah Sub-Account</h3><button class="modal-close" onclick="closeModal('modalSubAccount')">✕</button></div>
+      <div class="modal-body">
+      <div style="background:rgba(59,124,240,0.08);border:1px solid rgba(59,124,240,0.18);border-radius:10px;padding:10px 12px;margin-bottom:14px;display:flex;gap:10px;">
+        <div style="width:32px;height:32px;border-radius:8px;background:var(--blue);display:flex;align-items:center;justify-content:center;color:#fff;flex-shrink:0;">ℹ️</div>
+        <div><div style="font-weight:600;color:#fff;font-size:12px;">Info Hak Akses Sub-Account</div><div style="font-size:10.5px;color:var(--text-mid);">Sesuai sistem, akun ini hanya diberi hak untuk <b>Masuk Barang</b> dan melihat data (Read-Only). Akun ini tidak bisa mengedit perangkat, maupun mengajukan Keluar Barang dan CrossConnect.</div></div>
+      </div>
+      <div class="form-grid">
+        <div class="form-group full"><label>Nama Lengkap <span class="req">*</span></label><input id="su_name" class="form-input" placeholder="Nama lengkap"></div>
+          <div class="form-group full"><label>Email <span class="req">*</span></label><input id="su_email" type="email" class="form-input" placeholder="nama@domain.com"></div>
+          <div class="form-group full" id="su_password_group"><label>Password <span class="req">*</span></label><div class="account-password-wrap"><input id="su_password" type="password" class="form-input" placeholder="Minimal 8 karakter"><button type="button" class="account-password-toggle" data-visible="false" onclick="toggleAccountPassword('su_password')"><svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M17.94 17.94A10.07 10.07 0 0112 20c-7 0-11-8-11-8a18.45 18.45 0 015.06-5.94M9.9 4.24A9.12 9.12 0 0112 4c7 0 11 8 11 8a18.5 18.5 0 01-2.16 3.19m-6.72-1.07a3 3 0 11-4.24-4.24"/><line x1="1" y1="1" x2="23" y2="23"/></svg></button></div></div>
+        </div>
+      </div>
+      <div class="modal-foot"><button class="btn-secondary" onclick="closeModal('modalSubAccount')">Batal</button><button class="account-primary-button" onclick="saveSubAccount()">💾 Simpan</button></div>
+    </div>
+  </div>
+
+  <!-- MODAL CONFIRM DIALOG -->
+  <div class="modal-overlay" id="modalConfirmDialog" style="z-index: 99999 !important; background: rgba(15, 31, 61, 0.6) !important; backdrop-filter: blur(8px) !important;">
+    <div class="confirm-card" style="
+      width: 100%;
+      max-width: 400px;
+      background: linear-gradient(180deg, #FFFFFF 0%, #F5F8FC 100%) !important;
+      border: 1px solid #AFC8F3 !important;
+      border-radius: 20px !important;
+      box-shadow: 0 20px 40px rgba(15, 31, 61, 0.15) !important;
+      padding: 30px 24px 24px !important;
+      text-align: center !important;
+      position: relative !important;
+      overflow: hidden !important;
+      transform: scale(0.9);
+      opacity: 0;
+      transition: all 0.3s cubic-bezier(0.34, 1.56, 0.64, 1);
+    ">
+      <div id="confirmIconContainer" style="
+        width: 64px !important;
+        height: 64px !important;
+        border-radius: 50% !important;
+        background: #FFF3E0 !important;
+        display: flex !important;
+        align-items: center !important;
+        justify-content: center !important;
+        margin: 0 auto 16px !important;
+        border: 1px solid #FFE0B2 !important;
+        transition: all 0.3s ease !important;
+      ">
+        <span id="confirmIcon" style="font-size: 28px !important;">⚠️</span>
+      </div>
+      <h3 id="confirmTitle" style="margin-bottom: 8px !important; color: #0F1F3D !important; font-size: 18px !important; font-weight: 700 !important; font-family: inherit !important;">Konfirmasi</h3>
+      <p id="confirmMessage" style="color: #4A5568 !important; font-size: 14px !important; margin-bottom: 28px !important; line-height: 1.6 !important; font-family: inherit !important; font-weight: 500 !important;"></p>
+      <div style="display: flex !important; gap: 12px !important; justify-content: center !important;">
+        <button id="btnConfirmCancel" style="
+          flex: 1 !important;
+          padding: 12px 20px !important;
+          background: #E3EDFD !important;
+          border: 1px solid #AFC8F3 !important;
+          color: #0F1F3D !important;
+          border-radius: 12px !important;
+          cursor: pointer !important;
+          font-weight: 600 !important;
+          font-size: 14px !important;
+          transition: all 0.2s ease !important;
+          box-shadow: 0 1px 4px rgba(59,124,240,.08) !important;
+        ">Batal</button>
+        <button id="btnConfirmYes" style="
+          flex: 1 !important;
+          padding: 12px 20px !important;
+          background: #FFE8D6 !important;
+          border: 1px solid #FFD0B0 !important;
+          color: #0F1F3D !important;
+          border-radius: 12px !important;
+          cursor: pointer !important;
+          font-weight: 600 !important;
+          font-size: 14px !important;
+          transition: all 0.2s ease !important;
+          box-shadow: 0 2px 8px rgba(249, 115, 22, 0.15) !important;
+        ">Ya, Lanjutkan</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- MODAL QUANTITY PROMPT DIALOG -->
+  <div class="modal-overlay" id="modalQuantityPrompt" style="background: rgba(15, 31, 61, 0.4) !important; backdrop-filter: blur(8px) !important;">
+    <div class="confirm-card" style="
+      width: 100%;
+      max-width: 420px;
+      background: linear-gradient(180deg, #FFFFFF 0%, #F5F8FC 100%) !important;
+      border: 1px solid #AFC8F3 !important;
+      border-radius: 20px !important;
+      box-shadow: 0 20px 40px rgba(15, 31, 61, 0.15) !important;
+      padding: 28px 24px 24px !important;
+      text-align: center !important;
+      position: relative !important;
+      overflow: hidden !important;
+      transform: scale(0.9);
+      opacity: 0;
+      transition: all 0.3s cubic-bezier(0.34, 1.56, 0.64, 1);
+    ">
+      <div style="
+        width: 60px !important;
+        height: 60px !important;
+        border-radius: 50% !important;
+        background: #FEE2E2 !important;
+        display: flex !important;
+        align-items: center !important;
+        justify-content: center !important;
+        margin: 0 auto 16px !important;
+        border: 1px solid #FCA5A5 !important;
+      ">
+        <span style="font-size: 26px !important;">🗑️</span>
+      </div>
+      <h3 style="margin-bottom: 8px !important; color: #0F1F3D !important; font-size: 18px !important; font-weight: 700 !important;">Hapus Unit Perangkat</h3>
+      <p id="promptQtyMessage" style="color: #4A5568 !important; font-size: 13.5px !important; margin-bottom: 20px !important; line-height: 1.5 !important; font-weight: 500 !important;"></p>
+      
+      <div style="display: flex; align-items: center; justify-content: center; gap: 12px; margin-bottom: 24px; background: #EDF2F7; padding: 12px; border-radius: 14px; border: 1px solid #E2E8F0;">
+        <button type="button" id="btnQtyMinus" style="width: 42px; height: 42px; border-radius: 10px; border: 1px solid #CBD5E0; background: #FFFFFF; font-size: 20px; font-weight: bold; cursor: pointer; color: #2D3748; display: flex; align-items: center; justify-content: center; user-select: none;">-</button>
+        <input id="promptQtyInput" type="text" inputmode="numeric" value="1" style="width: 80px; height: 42px; text-align: center; font-size: 20px; font-weight: 700; border: 1px solid #CBD5E0; border-radius: 10px; background: #FFFFFF; color: #1A202C; outline: none; padding: 0; line-height: 42px; box-sizing: border-box;">
+        <button type="button" id="btnQtyPlus" style="width: 42px; height: 42px; border-radius: 10px; border: 1px solid #CBD5E0; background: #FFFFFF; font-size: 20px; font-weight: bold; cursor: pointer; color: #2D3748; display: flex; align-items: center; justify-content: center; user-select: none;">+</button>
+      </div>
+
+      <div style="display: flex !important; gap: 12px !important; justify-content: center !important;">
+        <button id="btnPromptCancel" style="
+          flex: 1 !important;
+          padding: 12px 20px !important;
+          background: #E3EDFD !important;
+          border: 1px solid #AFC8F3 !important;
+          color: #0F1F3D !important;
+          border-radius: 12px !important;
+          cursor: pointer !important;
+          font-weight: 600 !important;
+          font-size: 14px !important;
+        ">Batal</button>
+        <button id="btnPromptYes" style="
+          flex: 1 !important;
+          padding: 12px 20px !important;
+          background: #FEE2E2 !important;
+          border: 1px solid #FCA5A5 !important;
+          color: #991B1B !important;
+          border-radius: 12px !important;
+          cursor: pointer !important;
+          font-weight: 700 !important;
+          font-size: 14px !important;
+          box-shadow: 0 2px 8px rgba(239, 68, 68, 0.15) !important;
+        ">Hapus Unit</button>
+      </div>
+    </div>
+  </div>
+
+
+  <section class="page" id="page-profile">
+    <div class="page-header"><div><h2>Profile & Hak Akses</h2><p>Informasi akun dan role Anda (Admin / Support / Client).</p></div>
+      <div style="display:flex;gap:10px;">
+        <button class="page-action" onclick="openChangePasswordModal()">🔑 Ganti Password</button>
+      </div>
+    </div>
+    <div class="page-body">
+      <div class="profile-card" style="max-width:560px;">
+        <div class="profile-top"><div class="profile-avatar" id="profileAvatar">AR</div><div><div class="profile-name" id="profileName">Andi Ramadhan</div><div class="profile-role" id="profileRole">Facility Operations Lead</div></div></div>
+        <div class="profile-fields">
+          <div class="profile-row"><span class="k">Email</span><span class="v" id="profileEmailValue"><a href="/cdn-cgi/l/email-protection" class="__cf_email__" data-cfemail="94f5faf0fdbae6f5f9f5f0fcf5fad4fdfae0f1e6f8fdfaffbaf7fbbafdf0">[email&#160;protected]</a></span></div>
+          <div class="profile-row"><span class="k">Role</span><span class="v" id="profileRoleValue" style="text-transform:uppercase;font-weight:600;">ADMIN</span></div>
+          <div class="profile-row"><span class="k">Client / PT</span><span class="v" id="profileClientValue">-</span></div>
+          <div class="profile-row"><span class="k">Telepon</span><span class="v">+62 812-3456-7890</span></div>
+          <div class="profile-row"><span class="k">Departemen</span><span class="v">Operasional Fasilitas</span></div>
+          <div class="profile-row"><span class="k">Lokasi kerja</span><span class="v">Jakarta Data Center</span></div>
+        </div>
+        <div id="rolePermissions"></div>
+        <div style="margin-top:16px;display:flex;gap:8px;">
+          <button class="page-action secondary" style="height:38px;font-size:12px;" onclick="openChangePasswordModal()">🔑 Ganti Password</button>
+          <button class="page-action secondary" style="height:38px;font-size:12px;" onclick="logoutUser()">🚪 Logout</button>
+        </div>
+        <div id="quickLoginWrapper" style="margin-top:16px;padding:12px;background:rgba(255,255,255,0.03);border:1px solid var(--border);border-radius:8px;">
+          <div style="font-size:12px;font-weight:600;color:#fff;margin-bottom:8px;">🔑 Ganti Akun / Test Role Lain (Hanya Admin/Support):</div>
+          <div style="display:flex;gap:8px;flex-wrap:wrap;">
+            <button class="page-action secondary" style="height:32px;font-size:11px;" onclick="quickLogin('admin@interlink.co.id','admin123')">Login Admin</button>
+            <button class="page-action secondary" style="height:32px;font-size:11px;" onclick="quickLogin('support@interlink.co.id','support123')">Login Support</button>
+            <button class="page-action secondary" style="height:32px;font-size:11px;" onclick="quickLogin('client.nusantara@pt.com','client123')">Login Client Nusantara</button>
+          </div>
+          <div style="font-size:10.5px;color:var(--text-dim);margin-top:8px;">Klik untuk cepat ganti role tanpa logout manual. Tidak terlihat oleh Client.</div>
+        </div>
+      </div>
+
+
+    </div>
+  </section>
+</div>
+
+<!-- MODAL: MANAJEMEN AKUN (ADMIN ONLY) -->
+<div class="modal-overlay" id="modalAccount">
+  <div class="modal-card large account-modal-card">
+    <div class="modal-head"><h3 id="accountModalTitle">👤 Tambah Akun Baru</h3><button class="modal-close" onclick="closeModal('modalAccount')">✕</button></div>
+    <div class="modal-body">
+      <div id="accountFormMessage" class="account-form-message" style="display:none;"></div>
+      <div class="form-grid">
+        <div class="form-group full"><label>Nama Lengkap <span class="req">*</span></label><input id="au_name" class="form-input" placeholder="Nama lengkap pengguna"><div class="account-field-error" id="au_name_error"></div></div>
+        <div class="form-group"><label>Email <span class="req">*</span></label><input id="au_email" type="email" class="form-input" placeholder="nama@interlink.co.id"><div class="account-field-error" id="au_email_error"></div></div>
+        <div class="form-group"><label>Role <span class="req">*</span></label><select id="au_role" class="form-input" onchange="onAccountRoleChange()"><option value="admin">Admin</option><option value="support">Support</option><option value="client">Client</option></select><div class="account-field-error" id="au_role_error"></div></div>
+        <div class="form-group" id="au_password_group"><label>Password <span class="req">*</span></label><div class="account-password-wrap"><input id="au_password" type="password" class="form-input" placeholder="Minimal 8 karakter"><button type="button" class="account-password-toggle" data-visible="false" onclick="toggleAccountPassword('au_password')"><svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M17.94 17.94A10.07 10.07 0 0112 20c-7 0-11-8-11-8a18.45 18.45 0 015.06-5.94M9.9 4.24A9.12 9.12 0 0112 4c7 0 11 8 11 8a18.5 18.5 0 01-2.16 3.19m-6.72-1.07a3 3 0 11-4.24-4.24"/><line x1="1" y1="1" x2="23" y2="23"/></svg></button></div><div class="account-field-error" id="au_password_error"></div></div>
+        <div class="form-group" id="au_confirm_group"><label>Konfirmasi Password <span class="req">*</span></label><div class="account-password-wrap"><input id="au_confirm" type="password" class="form-input" placeholder="Ulangi password"><button type="button" class="account-password-toggle" data-visible="false" onclick="toggleAccountPassword('au_confirm')"><svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M17.94 17.94A10.07 10.07 0 0112 20c-7 0-11-8-11-8a18.45 18.45 0 015.06-5.94M9.9 4.24A9.12 9.12 0 0112 4c7 0 11 8 11 8a18.5 18.5 0 01-2.16 3.19m-6.72-1.07a3 3 0 11-4.24-4.24"/><line x1="1" y1="1" x2="23" y2="23"/></svg></button></div><div class="account-field-error" id="au_confirm_error"></div></div>
+        <div class="form-group" id="au_account_type_group" style="display:none;">
+          <label>Kategori Client</label>
+          <select id="au_account_type" class="form-input">
+            <option value="pribadi">Pribadi</option>
+            <option value="reseller">Reseller</option>
+          </select>
+        </div>
+        <div class="form-group" id="au_allow_sub_group" style="display:none; align-items:center;">
+          <label style="display:flex; align-items:center; gap:8px; cursor:pointer;">
+            <input type="checkbox" id="au_allow_sub" style="width:16px;height:16px;">
+            Izinkan Sub-Account
+          </label>
+        </div>
+        <div class="form-group full" id="au_client_group"><label>Client / PT <span class="req">*</span></label><select id="au_client" class="form-input"><option value="">-- Pilih Client / PT --</option></select><div class="account-field-error" id="au_client_error"></div></div>
+        <div class="form-group"><label>Telepon</label><input id="au_phone" class="form-input" placeholder="+62..."></div>
+        <div class="form-group"><label>Departemen</label><input id="au_department" class="form-input" placeholder="Contoh: Operasional"></div>
+        <div class="form-group full"><label>Lokasi Kerja</label><input id="au_location" class="form-input" placeholder="Contoh: Jakarta Data Center"></div>
+      </div>
+    </div>
+    <div class="modal-foot"><button class="btn-secondary" onclick="closeModal('modalAccount')">Batal</button><button class="account-primary-button" onclick="saveAccount()">💾 Simpan</button></div>
+  </div>
+</div>
+
+<!-- MODAL: RESET PASSWORD AKUN (ADMIN ONLY) -->
+<div class="modal-overlay" id="modalAdminAccountPassword">
+  <div class="modal-card" style="max-width:460px;">
+    <div class="modal-head"><h3>🔑 Ganti Password Akun</h3><button class="modal-close" onclick="closeModal('modalAdminAccountPassword')">✕</button></div>
+    <div class="modal-body">
+      <p class="account-modal-description" id="adminPasswordAccountName"></p>
+      <div id="adminPasswordMessage" class="account-form-message" style="display:none;"></div>
+      <div class="form-grid" style="grid-template-columns:1fr;">
+        <div class="form-group"><label>Password Baru <span class="req">*</span></label><div class="account-password-wrap"><input id="apr_password" type="password" class="form-input" placeholder="Minimal 8 karakter"><button type="button" class="account-password-toggle" data-visible="false" onclick="toggleAccountPassword('apr_password')"><svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M17.94 17.94A10.07 10.07 0 0112 20c-7 0-11-8-11-8a18.45 18.45 0 015.06-5.94M9.9 4.24A9.12 9.12 0 0112 4c7 0 11 8 11 8a18.5 18.5 0 01-2.16 3.19m-6.72-1.07a3 3 0 11-4.24-4.24"/><line x1="1" y1="1" x2="23" y2="23"/></svg></button></div><div class="account-field-error" id="apr_password_error"></div></div>
+        <div class="form-group"><label>Konfirmasi Password Baru <span class="req">*</span></label><div class="account-password-wrap"><input id="apr_confirm" type="password" class="form-input" placeholder="Ulangi password baru"><button type="button" class="account-password-toggle" data-visible="false" onclick="toggleAccountPassword('apr_confirm')"><svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M17.94 17.94A10.07 10.07 0 0112 20c-7 0-11-8-11-8a18.45 18.45 0 015.06-5.94M9.9 4.24A9.12 9.12 0 0112 4c7 0 11 8 11 8a18.5 18.5 0 01-2.16 3.19m-6.72-1.07a3 3 0 11-4.24-4.24"/><line x1="1" y1="1" x2="23" y2="23"/></svg></button></div><div class="account-field-error" id="apr_confirm_error"></div></div>
+      </div>
+    </div>
+    <div class="modal-foot"><button class="btn-secondary" onclick="closeModal('modalAdminAccountPassword')">Batal</button><button class="account-primary-button" onclick="saveAdminAccountPassword()">💾 Simpan Password</button></div>
+  </div>
+</div>
+
+<!-- MODAL: HAPUS AKUN (ADMIN ONLY) -->
+<div class="modal-overlay" id="modalDeleteAccount">
+  <div class="modal-card" style="max-width:440px;">
+    <div class="modal-head"><h3>🗑 Hapus Akun</h3><button class="modal-close" onclick="closeModal('modalDeleteAccount')">✕</button></div>
+    <div class="modal-body"><p class="account-delete-message" id="deleteAccountMessage"></p></div>
+    <div class="modal-foot"><button class="btn-secondary" onclick="closeModal('modalDeleteAccount')">Batal</button><button class="account-delete-button" onclick="confirmDeleteAccount()">🗑 Hapus</button></div>
+  </div>
+</div>
+
+
+<!-- MODAL: ADD CLIENT -->
+<div class="modal-overlay" id="modalClient">
+  <div class="modal-card">
+    <div class="modal-head"><h3>🏢 Tambah Klien Baru</h3><button class="modal-close" onclick="closeModal('modalClient')">✕</button></div>
+    <div class="modal-body">
+      <div class="form-grid">
+        <div class="form-group"><label>ID Rack Klien <span class="req">*</span></label><input id="c_id" class="form-input" placeholder="contoh: RCK-D01-01"></div>
+        <div class="form-group"><label>Status</label><select id="c_status" class="form-input"><option>Aktif</option><option>Jatuh tempo</option><option>Hold</option><option>Suspend</option><option>Berhenti Langganan</option><option>Prospek</option></select></div>
+        <div id="c_status_admin_note" style="display:none;font-size:10px;color:var(--orange);margin-top:4px;">⚠ Hanya Admin yang bisa mengubah status client (Aktif/Hold/Suspend/Jatuh Tempo/Berhenti Langganan)</div>
+        <div class="form-group full"><label>Nama PT <span class="req">*</span></label><input id="c_pt" class="form-input" placeholder="PT Contoh Teknologi Indonesia"></div>
+        <div class="form-group"><label>Layanan <span class="req">*</span></label><select id="c_layanan" class="form-input" onchange="onClientLayananChange()"><option>Colocation Full Rack</option><option>Colocation Half Rack</option><option>Colocation Quarter Rack</option><option>Colocation - Per U</option><option>Dedicated Server</option><option>Cloud Hosting</option><option>Cross Connect</option><option>Managed Service</option></select></div>
+        <div class="form-group" id="c_power_group"><label>Daya (A)</label><input id="c_power" class="form-input" placeholder="5 A"></div>
+        <div class="form-group" id="c_u_dari_group" style="display:none;"><label>U Dari <span class="req">*</span></label><input id="c_u_dari" type="number" min="1" max="50" class="form-input" placeholder="Contoh: 10"></div>
+        <div class="form-group" id="c_u_sampai_group" style="display:none;"><label>U Sampai <span class="req">*</span></label><input id="c_u_sampai" type="number" min="1" max="50" class="form-input" placeholder="Contoh: 12"></div>
+        <div class="form-group full" style="grid-column:1/-1;">
+          <label>Pilih Lantai & Rack Disewa <span class="req">*</span></label>
+          <div style="display:flex;gap:8px;margin-bottom:6px;">
+            <select id="c_floor_select" class="form-input" style="flex:1;" onchange="onClientFloorChange()">
+              <option value="">-- Pilih Lantai --</option>
+            </select>
+            <select id="c_rack_select" class="form-input" style="flex:1;" onchange="onClientRackChange()">
+              <option value="">-- Pilih Rack --</option>
+            </select>
+          </div>
+          <input id="c_lokasi" class="form-input" placeholder="Otomatis terisi dari Lantai & Rack pilihan di atas, atau ketik manual">
+        </div>
+        <div class="form-group full">
+          <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:6px;">
+            <label style="margin-bottom:0;">PIC / Kontak</label>
+            <button type="button" class="btn-add-pic" onclick="addPicRow()" style="background:rgba(59,130,246,0.15); color:var(--blue); border:1px solid rgba(59,130,246,0.3); border-radius:6px; padding:4px 10px; font-size:12px; font-weight:600; cursor:pointer; display:inline-flex; align-items:center; gap:4px; transition:all 0.2s ease;">
+              <span style="font-size:14px; font-weight:700;">+</span> Tambah PIC
+            </button>
+          </div>
+          <div id="picInputsContainer" style="display:flex; flex-direction:column; gap:8px;">
+            <div class="pic-input-row" style="display:flex; gap:8px; align-items:center;">
+              <input id="c_pic" class="form-input pic-field" placeholder="Nama & No HP PIC (mis: Budi - 081234567890)">
+              <button type="button" class="btn-remove-pic" onclick="removePicRow(this)" title="Hapus PIC" style="background:rgba(239,68,68,0.15); color:#ef4444; border:1px solid rgba(239,68,68,0.3); border-radius:6px; width:36px; height:36px; display:none; align-items:center; justify-content:center; cursor:pointer; font-size:14px; flex-shrink:0; transition:all 0.2s ease;">✕</button>
+            </div>
+          </div>
+        </div>
+        <div class="form-group"><label>Email Client</label><input id="c_email" class="form-input" placeholder="it@ptcontoh.co.id"></div>
+        <div class="form-group"><label>Telepon</label><input id="c_telp" class="form-input" placeholder="+62..."></div>
+        <div class="form-group"><label>Batas Kapasitas Berat (Kg)</label><input id="c_max_berat" type="number" step="0.1" min="1" class="form-input" placeholder="Default: 173 Kg"></div>
+        <div class="form-group full"><label>Keterangan</label><textarea id="c_ket" class="form-input" placeholder="Catatan tambahan..."></textarea></div>
+      </div>
+    </div>
+    <div class="modal-foot"><button class="btn-secondary" onclick="closeModal('modalClient')">Batal</button><button class="btn-modal-primary" onclick="saveClient()">💾 Simpan Klien</button></div>
+  </div>
+</div>
+
+<!-- MODAL: TAMBAH PERANGKAT MASUK / KELUAR -->
+<div class="modal-overlay" id="modalDevice">
+  <div class="modal-card">
+    <div class="modal-head"><h3 id="modalDeviceTitle">📥 Tambah Perangkat Masuk</h3><button class="modal-close" onclick="closeModal('modalDevice')">✕</button></div>
+    <div class="modal-body">
+      <div style="margin-bottom:14px;display:flex;justify-content:space-between;align-items:center;">
+        <span id="modalDeviceClientName" style="font-size:12px;font-weight:600;color:#fff;">-</span>
+        <span id="modalDeviceTypeBadge" class="device-type-badge in">MASUK</span>
+      </div>
+      <div class="form-grid">
+        <div class="form-group full" id="keluarPickerWrap" style="display:none;"><label>Pilih Perangkat (Otomatis isi form)</label><select id="d_pickFromMasuk" class="form-input" onchange="fillFromExistingDevice()"><option value="">-- Input Manual / Pilih Perangkat Masuk --</option></select></div>
+        <div class="form-group"><label>Nama Perangkat <span class="req">*</span></label><input id="d_nama" class="form-input" placeholder="Dell R740 / Cisco Switch"></div>
+        <div class="form-group"><label>Kategori</label><select id="d_kategori" class="form-input"><option>Server</option><option>Storage</option><option>Switch</option><option>Router</option><option>Firewall</option><option>Patch Panel</option><option>Kabel Fiber</option><option>Modul / Transceiver</option><option>OTB</option><option>UPS / PDU</option><option>Lainnya</option></select></div>
+        <div class="form-group"><label>SN / Asset Tag</label><input id="d_sn" class="form-input" placeholder="SN123..."></div>
+        <div class="form-group" style="display:none;"><label>Jumlah (Unit)</label><input id="d_jumlah" type="number" min="1" value="1" class="form-input"></div>
+        
+        <div class="form-group" id="d_group_pos"><label>Rack Position <span class="req">*</span></label>
+        <div id="d_rackpos_input_container">
+        <input id="d_rackpos" class="form-input" placeholder="Misal: Rack A-04 U12">
+        </div>
+        </div>
+        <div class="form-group" id="d_group_berat" style="display:none;">
+          <label id="d_berat_label">Berat Perangkat</label>
+          <div style="display:flex;gap:6px;">
+            <input id="d_berat" type="text" class="form-input" placeholder="Contoh: 500,2 atau 20,3" style="flex:1;">
+            <select id="d_berat_unit" class="form-input" style="width:95px;height:38px;">
+              <option value="kg">Kg</option>
+              <option value="gram">Gram</option>
+            </select>
+          </div>
+        </div>
+
+        <div class="form-group"><label>Kondisi</label><select id="d_kondisi" class="form-input"><option>Baik</option><option>Baru</option><option>Rusak</option><option>Menunggu</option></select></div>
+        
+        <div class="form-group" id="fieldTglMasuk"><label>Tanggal Masuk <span class="req">*</span></label><input id="d_tglMasuk" type="date" class="form-input"></div>
+        <div class="form-group" id="fieldTglKeluar" style="display:none;"><label>Tanggal Keluar <span class="req">*</span></label><input id="d_tglKeluar" type="date" class="form-input"></div>
+        
+        <div class="form-group full" id="fieldAlasan" style="display:none;"><label>Tujuan / Alasan Keluar <span class="req">*</span></label><input id="d_alasan" class="form-input" placeholder="Return ke client / RMA / Decomm"></div>
+        <div class="form-group full"><label>Keterangan Tambahan</label><input id="d_ket" class="form-input" placeholder="Host virtualization / Core switch..."></div>
+      </div>
+    </div>
+    <div class="modal-foot"><button class="btn-secondary" onclick="closeModal('modalDevice')">Batal</button><button id="btnSaveDevice" class="btn-modal-primary" onclick="saveDevice()">💾 Simpan</button></div>
+  </div>
+</div>
+
+
+<!-- MODAL: ADD RACK -->
+<div class="modal-overlay" id="modalRack">
+  <div class="modal-card large">
+    <div class="modal-head"><h3>🏢 Kelola PT di Rack - Support & Admin</h3><button class="modal-close" onclick="closeModal('modalRack')">✕</button></div>
+    <div class="modal-body" style="padding:0;display:flex;flex-direction:column;overflow:hidden;max-height:75vh;">
+      <div style="display:flex;background:rgba(0,0,0,0.2);border-bottom:1px solid var(--border);flex-shrink:0;">
+        <button type="button" id="rackTabBtnInfo" onclick="switchRackTab('info')" style="flex:1;padding:14px 12px;background:var(--blue);color:#fff;font-weight:600;font-size:12px;border:none;border-right:1px solid var(--border);cursor:pointer;display:flex;align-items:center;justify-content:center;gap:6px;">➕ Tambah PT / Client Baru</button>
+        <button type="button" id="rackTabBtnPT" onclick="switchRackTab('pt')" style="flex:1;padding:14px 12px;background:transparent;color:var(--text-mid);font-weight:500;font-size:12px;border:none;cursor:pointer;display:flex;align-items:center;justify-content:center;gap:6px;">🔄 Ganti / Pindah PT</button>
+      </div>
+      <div id="rackTabInfo" style="padding:18px 20px;overflow-y:auto;flex:1;">
+        <div style="background:linear-gradient(135deg, rgba(59,124,240,0.10), rgba(47,194,216,0.06));border:1px solid rgba(59,124,240,0.22);border-radius:10px;padding:12px;margin-bottom:14px;display:flex;gap:10px;">
+          <div style="width:36px;height:36px;border-radius:8px;background:var(--blue);display:flex;align-items:center;justify-content:center;color:#fff;flex-shrink:0;">🏢</div>
+          <div><div style="font-weight:700;color:#fff;font-size:12.5px;">Tambah PT / Client Baru - Sewa Bisa Lebih dari 1 Rack</div><div style="font-size:11px;color:var(--text-mid);margin-top:2px;">Untuk Support & Admin: input client yang sewa lebih dari 1 rack, half rack, quarter rack, dll. Pilih banyak rack sekaligus.</div></div>
+        </div>
+        <div style="background:rgba(0,0,0,0.18);border:1px solid var(--border);border-radius:10px;padding:12px;margin-bottom:14px;">
+          <div style="font-size:11px;font-weight:600;color:#fff;margin-bottom:6px;">🏢 PT Penghuni Saat Ini di <span id="rackModalCurrentRackInfo" style="color:var(--cyan);">Rack</span></div>
+          <div id="rackModalCurrentPTs" style="display:flex;flex-wrap:wrap;gap:6px;min-height:32px;"></div>
+        </div>
+        <div class="form-grid">
+          <div class="form-group full"><label>Nama PT Baru <span class="req">*</span></label><input id="r_pt_baru_nama" class="form-input" placeholder="Ketik: PT Global Data Nusantara / PT Baru"></div>
+          <div class="form-group"><label>ID Klien (auto jika kosong)</label><input id="r_pt_baru_id" class="form-input" placeholder="Auto RCK-..."></div>
+          <div class="form-group"><label>Layanan / Tipe Sewa <span class="req">*</span></label><select id="r_pt_baru_layanan" class="form-input" onchange="onPTBaruLayananChange()"><option>Colocation Full Rack</option><option>Colocation Half Rack</option><option>Colocation Quarter Rack</option><option>Colocation - Per U</option><option>Dedicated Server</option><option>Cloud Hosting</option><option>Managed Service</option><option>Cross Connect</option></select></div>
+          <div class="form-group" id="r_pt_baru_power_group"><label>Daya (A)</label><input id="r_pt_baru_power" class="form-input" placeholder="5 A (untuk half rack 3 A, quarter 1.5 A)"></div>
+          <div class="form-group" id="r_pt_baru_u_dari_group" style="display:none;"><label>U Dari <span class="req">*</span></label><input id="r_pt_baru_u_dari" type="number" min="1" max="50" class="form-input" placeholder="Contoh: 10"></div>
+          <div class="form-group" id="r_pt_baru_u_sampai_group" style="display:none;"><label>U Sampai <span class="req">*</span></label><input id="r_pt_baru_u_sampai" type="number" min="1" max="50" class="form-input" placeholder="Contoh: 12"></div>
+          <div class="form-group"><label>Jumlah Rack Disewa</label><input id="r_pt_jumlah_rack" type="number" min="1" max="10" value="1" class="form-input"></div>
+          <div class="form-group full"><label>Pilih Rack yang Disewa <span class="req">*</span> (Bisa pilih lebih dari 1 untuk client sewa >1 rack)</label>
+            <div style="display:flex;gap:8px;margin-bottom:8px;">
+              <select id="r_rack_filter_lantai" class="form-input" style="flex:1;" onchange="renderRackMultiSelect()">
+                <option value="all">-- Semua Lantai --</option>
+              </select>
+              <select id="r_rack_filter_tipe" class="form-input" style="flex:1;" onchange="renderRackMultiSelect()">
+                <option value="all">-- Semua Tipe --</option>
+                <option value="Open Rack">Open Rack</option>
+                <option value="Close Rack">Close Rack</option>
+              </select>
+            </div>
+            <div id="r_rack_multi_select" style="max-height:120px;overflow-y:auto;background:rgba(0,0,0,0.2);border:1px solid var(--border);border-radius:8px;padding:8px;display:grid;grid-template-columns:1fr 1fr;gap:6px;"></div>
+            <div style="font-size:10px;color:var(--text-dim);margin-top:4px;">Centang rack yang akan disewa oleh PT ini. Untuk half rack, bisa centang 1 rack tapi layanan Half Rack.</div>
+          </div>
+          <div class="form-group full"><label>Lokasi / Zona (auto dari rack terpilih)</label><input id="r_pt_lokasi_custom" class="form-input" placeholder="Auto terisi dari rack yang dipilih, atau ketik manual"></div>
+          <div class="form-group full"><label>Keterangan Sewa</label><textarea id="r_pt_keterangan" class="form-input" placeholder="Contoh: Sewa 2 rack full di lantai 2 zona A, atau sewa half rack di Rack B-02..."></textarea></div>
+        </div>
+        <div style="font-size:10.5px;color:#8cb1ee;margin-top:8px;background:rgba(59,124,240,0.06);border-radius:6px;padding:8px;">💡 Target Rack Utama: <b id="rackModalTargetId" style="color:#fff;">-</b> | Client sewa <span id="rackModalJumlahRackInfo">1</span> rack. Kosongkan jika hanya kelola pergantian di tab sebelah.</div>
+      </div>
+      <div id="rackTabPT" style="display:none;padding:18px 20px;overflow-y:auto;flex:1;">
+        <div style="background:rgba(255,143,77,0.08);border:1px solid rgba(255,143,77,0.18);border-radius:10px;padding:12px;margin-bottom:14px;display:flex;gap:10px;">
+          <div style="width:36px;height:36px;border-radius:8px;background:var(--orange);display:flex;align-items:center;justify-content:center;color:#fff;flex-shrink:0;">🔄</div>
+          <div><div style="font-weight:700;color:#fff;font-size:12.5px;">Ganti Nama PT / Pindah PT ke Rack Lain</div><div style="font-size:11px;color:var(--text-mid);">Hanya untuk pergantian nama PT atau perpindahan PT antar rack. Tidak untuk tambah PT baru.</div></div>
+        </div>
+        <div class="form-grid">
+          <div class="form-group full"><label>Jenis Aksi <span class="req">*</span></label><select id="r_aksi_jenis" class="form-input" onchange="onRackAksiJenisChange()"><option value="ganti_nama">Ganti Nama PT</option><option value="pindah_rack">Pindah Rack (Perpindahan PT)</option><option value="ganti_dan_pindah">Ganti Nama + Pindah Rack</option></select></div>
+          <div class="form-group"><label>PT Lama (PILIH) *</label><select id="r_pt_lama_select" class="form-input"><option value="">-- Pilih PT yang akan diganti/dipindah --</option></select></div>
+          <div class="form-group"><label>PT Baru / Nama Baru (KETIK) *</label><input id="r_pt_baru_ganti_nama" class="form-input" placeholder="Ketik nama PT baru atau nama pengganti"></div>
+          <div class="form-group" id="r_group_rack_lama"><label>Rack Lama (auto)</label><input id="r_pt_lama" class="form-input" placeholder="Auto terisi" readonly style="opacity:0.7;"></div>
+          <div class="form-group" id="r_group_rack_baru"><label>Rack Baru (PILIH untuk pindah)</label><select id="r_rack_baru_pindah" class="form-input"><option value="">-- Pilih Rack Tujuan --</option></select></div>
+          <div class="form-group"><label>📅 Tanggal Pergantian / Pindah</label><input id="r_pt_tgl" type="date" class="form-input"></div>
+          <div class="form-group full"><label>📝 Alasan / Catatan</label><textarea id="r_pt_catatan" class="form-input" placeholder="Contoh: PT lama ganti nama jadi PT baru karena rebranding, atau PT pindah dari Rack A-04 ke Rack B-02 karena upgrade..."></textarea></div>
+        </div>
+        <div class="form-group full" id="rackPergantianHistoryWrap" style="display:none;margin-top:12px;">
+          <label>📜 Riwayat Pergantian / Pindah di Rack Ini</label>
+          <div id="rackPergantianHistory" style="max-height:120px;overflow-y:auto;background:rgba(0,0,0,0.25);border:1px solid var(--border);border-radius:8px;padding:8px;font-size:11px;"></div>
+        </div>
+      </div>
+    </div>
+    <div class="modal-foot"><button class="btn-secondary" onclick="closeModal('modalRack')">Batal</button><button class="btn-modal-primary" onclick="saveRackPTManagement()">💾 Simpan PT / Pindah PT</button></div>
+  </div>
+</div>
+
+<!-- MODAL: TAMBAH LANTAI -->
+<div class="modal-overlay" id="modalFloor">
+  <div class="modal-card" style="max-width:460px;"><div class="modal-head"><h3>🏢 Tambah Lantai</h3><button class="modal-close" onclick="closeModal('modalFloor')">✕</button></div><div class="modal-body"><div id="floorFormMessage" class="account-form-message" style="display:none;"></div><div class="form-grid" style="grid-template-columns:1fr;"><div class="form-group"><label>Nama Lantai <span class="req">*</span></label><input id="fl_name" class="form-input" placeholder="Contoh: Lantai 4"><div class="account-field-error" id="fl_name_error"></div></div><div class="form-group"><label>Deskripsi / Area</label><input id="fl_area" class="form-input" placeholder="Contoh: Gedung A sayap timur"></div><div class="form-group"><label>Kapasitas Maksimal Rack</label><input id="fl_capacity" type="number" min="1" class="form-input" placeholder="Contoh: 24"></div></div></div><div class="modal-foot"><button class="btn-secondary" onclick="closeModal('modalFloor')">Batal</button><button class="account-primary-button" onclick="saveFloor()">💾 Simpan</button></div></div>
+</div>
+
+<!-- MODAL: RACK INFO - TAMBAH RACK BARU (SIMPLE) -->
+<div class="modal-overlay" id="modalRackInfo">
+  <div class="modal-card">
+    <div class="modal-head"><h3>🗄️ Tambah / Edit Rack Baru</h3><button class="modal-close" onclick="closeModal('modalRackInfo')">✕</button></div>
+    <div class="modal-body">
+      <div style="background:rgba(59,124,240,0.08);border:1px solid rgba(59,124,240,0.18);border-radius:10px;padding:10px 12px;margin-bottom:14px;display:flex;gap:10px;">
+        <div style="width:32px;height:32px;border-radius:8px;background:var(--blue);display:flex;align-items:center;justify-content:center;color:#fff;flex-shrink:0;">🗄️</div>
+        <div><div style="font-weight:600;color:#fff;font-size:12px;">Info Teknis Rack - Penambahan Rack Baru</div><div style="font-size:10.5px;color:var(--text-mid);">Isi data rack saja, dipisah dari Kelola PT biar client tidak bingung. Untuk Support & Admin.</div></div>
+      </div>
+      <div class="form-grid">
+        <div class="form-group"><label>ID Rack *</label><input id="r_info_id" class="form-input" placeholder="Rack D-01"></div>
+        <div class="form-group" style="display:none;"><label>Status</label><select id="r_info_status" class="form-input"><option>Aktif</option><option>Proses</option><option>Hold</option><option>Terminate</option></select></div>
+        <div class="form-group"><label>Lantai *</label><select id="r_info_floor" class="form-input"><option value="">-- Pilih Lantai --</option></select></div><div class="form-group full"><label>Lokasi Lantai / Zona *</label><input id="r_info_lokasi" class="form-input" placeholder="Lantai 2 · Zona A"></div>
+        <div class="form-group" style="display:none;"><label>Kapasitas (%)</label><input id="r_info_util" type="number" min="0" max="100" class="form-input" value="50"></div>
+        <div class="form-group" style="display:none;"><label>Suhu (°C)</label><input id="r_info_temp" type="number" class="form-input" value="22"></div>
+        <div class="form-group" id="ri_power_group"><label>Daya (A)</label><input id="r_info_power" class="form-input" placeholder="10 A"></div>
+        <div class="form-group"><label>Total U</label><select id="r_info_u" class="form-input"><option value="1U">1U</option><option value="2U">2U</option><option value="3U">3U</option><option value="4U">4U</option><option value="5U">5U</option><option value="6U">6U</option><option value="7U">7U</option><option value="8U">8U</option><option value="9U">9U</option><option value="10U">10U</option><option value="11U">11U</option><option value="12U">12U</option><option value="13U">13U</option><option value="14U">14U</option><option value="15U">15U</option><option value="16U">16U</option><option value="17U">17U</option><option value="18U">18U</option><option value="19U">19U</option><option value="20U">20U</option><option value="21U">21U</option><option value="22U">22U</option><option value="23U">23U</option><option value="24U">24U</option><option value="25U">25U</option><option value="26U">26U</option><option value="27U">27U</option><option value="28U">28U</option><option value="29U">29U</option><option value="30U">30U</option><option value="31U">31U</option><option value="32U">32U</option><option value="33U">33U</option><option value="34U">34U</option><option value="35U">35U</option><option value="36U">36U</option><option value="37U">37U</option><option value="38U">38U</option><option value="39U">39U</option><option value="40U">40U</option><option value="41U">41U</option><option value="42U">42U</option><option value="43U">43U</option><option value="44U">44U</option><option value="45U">45U</option><option value="46U">46U</option></select></div>
+        <div class="form-group"><label>Tipe Rack</label><select id="ri_tipeRack" class="form-input" onchange="toggleRackOtb()"><option value="Close Rack">Close Rack</option><option value="Open Rack">Open Rack</option></select></div>
+        <div class="form-group full" id="ri_otb_group" style="display:none;"><label>Nomor OTB (Opsional)</label><input id="ri_otb" class="form-input" placeholder="Contoh: OTB 1 / OTB 24"></div>
+        <div class="form-group full"><label>Keterangan</label><textarea id="r_info_ket" class="form-input" placeholder="Catatan rack..."></textarea></div>
+      </div>
+    </div>
+    <div class="modal-foot"><button class="btn-secondary" onclick="closeModal('modalRackInfo')">Batal</button><button class="btn-modal-primary" onclick="saveRackInfo()">💾 Simpan Rack Baru</button></div>
+  </div>
+</div>
+
+<!-- MODAL: TICKET CROSSCONNECT & BARANG -->
+<div class="modal-overlay" id="modalTicket">
+  <div class="modal-card large">
+    <div class="modal-head"><h3>🎫 Submit Ticket - CrossConnect / Barang</h3><button class="modal-close" onclick="closeModal('modalTicket')">✕</button></div>
+    <div class="modal-body">
+      <div class="form-grid">
+        <div id="tk_req_wrapper" class="form-group full" style="background:rgba(255,255,255,0.03);border:1px dashed var(--border-hi);border-radius:10px;padding:12px;display:flex;gap:12px;align-items:center;flex-wrap:wrap;">
+          <div style="flex:1;min-width:200px;">
+            <label style="font-size:11px;color:var(--cyan);letter-spacing:1px;font-family:var(--font-mono);">🆔 ID REQUEST</label>
+            <input id="tk_req_id" class="form-input" readonly style="margin-top:4px;background:rgba(59,124,240,0.08) !important;border:1px solid rgba(59,124,240,0.25) !important;color:var(--cyan) !important;font-family:var(--font-mono);font-weight:600;letter-spacing:0.5px;">
+          </div>
+          <div style="flex:1;min-width:200px;">
+            <label style="font-size:11px;color:var(--orange);letter-spacing:1px;font-family:var(--font-mono);">🏷️ KODE LABEL CROSSCONNECT</label>
+            <input id="tk_kode_label" class="form-input" readonly placeholder="Pilih Rack terlebih dahulu..." style="margin-top:4px;background:rgba(255,143,77,0.08) !important;border:1px solid rgba(255,143,77,0.25) !important;color:var(--orange) !important;font-family:var(--font-mono);font-weight:600;letter-spacing:0.5px;">
+          </div>
+        </div>
+        
+        <div class="form-grid full" id="tk_tipe_rack_wrapper" style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:14px;background:rgba(255,255,255,0.02);padding:12px;border:1px solid var(--border);border-radius:10px;margin-bottom:8px;">
+          <div class="form-group" style="margin-bottom:0;"><label>Tipe Rack Tujuan</label><select id="tk_tipe_rack" class="form-input" onchange="toggleTkOpenRack()"><option value="Close Rack">Close Rack</option><option value="Open Rack">Open Rack</option></select></div>
+          <div class="form-group" id="tk_open_floor_group" style="display:none;margin-bottom:0;"><label>Lantai</label><select id="tk_open_floor" class="form-input"><option value="">-- Pilih Lantai --</option></select></div>
+          <div class="form-group" id="tk_open_u_group" style="display:none;margin-bottom:0;"><label>Posisi U</label><select id="tk_open_u" class="form-input"><option value="">-- Pilih U --</option></select></div>
+        </div>
+
+        <div class="form-group"><label>Tipe Tiket <span class="req">*</span></label><select id="tk_type" class="form-input" onchange="onTicketTypeChange()"><option value="CrossConnect">🔗 CrossConnect</option><option value="Masuk Barang">📥 Masuk Barang</option><option value="Keluar Barang">📤 Keluar Barang</option><option value="Permintaan Terminate" data-client-only>⛔ Permintaan Terminate</option></select></div>
+        <div class="form-group"><label>Prioritas</label><select id="tk_priority" class="form-input"><option>Prioritas tinggi</option><option>Prioritas sedang</option><option>Prioritas rendah</option></select></div>
+        <div class="form-group"><label>Status</label><select id="tk_status" class="form-input"><option>Diproses</option><option>Menunggu Approval</option><option>Disetujui</option><option>Selesai</option></select></div>
+        <div class="form-group"><label>Tanggal Request</label><input id="tk_date" type="date" class="form-input" onchange="generateKodeLabel()"></div>
+
+        <div class="form-group full" id="tk_group_title"><label>Judul Tiket <span class="req">*</span></label><input id="tk_title" class="form-input" placeholder="Contoh: Permintaan CrossConnect Rack A-04 ke ISP Biznet"></div>
+
+        <!-- Common: PT & Rack -->
+        <div class="form-group"><label>Nama PT / Client</label><select id="tk_pt" class="form-input"><option value="">-- Pilih PT --</option></select></div>
+        <div class="form-group"><label>Rack Terkait</label><select id="tk_rack" class="form-input" onchange="updateTitikAFromRack(); generateKodeLabel();"><option value="">-- Pilih Rack --</option></select></div>
+
+        <!-- CROSSCONNECT FIELDS -->
+        <div id="tk_fields_cross" class="form-grid full" style="display:grid;grid-template-columns:1fr 1fr;gap:14px;margin-top:4px;border-top:1px solid var(--border);padding-top:14px;">
+          <div class="form-group"><label>Titik A (Rack A)</label><input id="tk_titikA" class="form-input" placeholder="Auto terisi dari Rack yang dipilih" oninput="generateKodeLabel()"></div>
+          <div class="form-group"><label>Titik B (Nama PT / Lantai) <span class="req">*</span></label><input id="tk_titikB" class="form-input" placeholder="Nama PT / Lantai" oninput="generateKodeLabel()"></div>
+          <div class="form-group"><label>Tipe Titik B</label><select id="tk_tipe_titikB" class="form-input" onchange="toggleTkOpenRackB()"><option value="Close Rack">Close Rack</option><option value="Open Rack">Open Rack</option></select></div>
+          <div class="form-group" id="tk_open_floor_groupB" style="display:none;"><label>Lantai Titik B</label><select id="tk_open_floorB" class="form-input"><option value="">-- Pilih Lantai --</option></select></div>
+          <div class="form-group" id="tk_open_u_groupB" style="display:none;"><label>Posisi U Titik B</label><select id="tk_open_uB" class="form-input"><option value="">-- Pilih U --</option></select></div>
+          <div class="form-group" style="display:none;"><input id="tk_pt_tujuan" class="form-input"></div>
+          <div class="form-group"><label>Jenis Koneksi</label><select id="tk_conn_type" class="form-input" onchange="toggleOtbFields(); generateKodeLabel();"><option>Single Mode Fiber</option><option>Multi Mode Fiber</option><option>CAT6 UTP</option><option>Cross Connect Internal</option><option>OTB Fiber</option></select></div>
+          <div class="form-group"><label>📏 Panjang Kabel</label><input id="tk_cable_len" class="form-input" placeholder="Ketik manual, mis: 30 meter"></div>
+          <div class="form-group" id="tk_group_otb" style="display:none;"><label>Nomor OTB (Opsional)</label><input id="tk_otb_num" class="form-input" placeholder="Contoh: 1" oninput="generateKodeLabel()"></div>
+          <div class="form-group" id="tk_group_port" style="display:none;"><label>Nomor Port (Opsional)</label><input id="tk_port_num" class="form-input" placeholder="Contoh: 24" oninput="generateKodeLabel()"></div>
+        </div>
+
+        <!-- MASUK BARANG FIELDS -->
+        <div id="tk_fields_masuk" class="form-grid full" style="display:none;grid-template-columns:1fr 1fr;gap:14px;margin-top:4px;border-top:1px solid var(--border);padding-top:14px;">
+          <div class="form-group"><label>Nama Perangkat <span class="req">*</span></label><input id="tk_dev_name" class="form-input" placeholder="Dell R740 / Cisco Switch"></div>
+          <div class="form-group"><label>Kategori</label><select id="tk_dev_cat" class="form-input"><option>Server</option><option>Storage</option><option>Switch</option><option>Router</option><option>Firewall</option><option>Patch Panel</option><option>Kabel Fiber</option><option>Modul / Transceiver</option><option>OTB</option><option>UPS / PDU</option><option>Lainnya</option></select></div>
+          <div class="form-group" style="display:none;"><label>Jumlah</label><input id="tk_dev_qty" type="number" min="1" value="1" class="form-input"></div>
+          <div class="form-group"><label>SN / Asset Tag</label><input id="tk_dev_sn" class="form-input" placeholder="SN123..."></div>
+          <div class="form-group"><label>Tgl Rencana Masuk</label><input id="tk_dev_tglMasuk" type="date" class="form-input"></div>
+          <div class="form-group" id="tk_group_pos"><label id="tk_pos_label">U Position / Rack Pos</label>
+<div id="tk_dev_pos_container">
+<input id="tk_dev_pos" class="form-input" placeholder="Rack A-04 U10-U12">
+</div>
+</div>
+<div class="form-group" id="tk_group_berat" style="display:none;">
+  <label id="tk_berat_label">Berat Perangkat <span class="req">*</span></label>
+  <div style="display:flex;gap:6px;">
+    <input id="tk_dev_berat" type="text" class="form-input" placeholder="Contoh: 500,2 atau 20,3" style="flex:1;">
+    <select id="tk_dev_berat_unit" class="form-input" style="width:95px;height:38px;">
+      <option value="kg">Kg</option>
+      <option value="gram">Gram</option>
+    </select>
+  </div>
+</div>
+        </div>
+
+        <!-- KELUAR BARANG FIELDS -->
+        <div id="tk_fields_keluar" class="form-grid full" style="display:none;grid-template-columns:1fr 1fr;gap:14px;margin-top:4px;border-top:1px solid var(--border);padding-top:14px;">
+          <div class="form-group full"><label>Pilih Perangkat Aktif (dari Inventory)</label><select id="tk_dev_existing" class="form-input"><option value="">-- Ketik manual di bawah / pilih perangkat aktif --</option></select><div style="font-size:11px;color:var(--text-dim);margin-top:4px;">Jika dipilih, nama & SN otomatis terisi.</div></div>
+          <div class="form-group"><label>Nama Perangkat Keluar</label><input id="tk_out_name" class="form-input" placeholder="Nama perangkat yang keluar"></div>
+          <div class="form-group" style="display:none;"><label>Jumlah Keluar <span class="req">*</span></label><input id="tk_out_qty" type="number" min="1" class="form-input" placeholder="Jumlah unit" value="1"></div>
+          <div class="form-group"><label>SN</label><input id="tk_out_sn" class="form-input" placeholder="SN..."></div>
+          <div class="form-group"><label>Tgl Rencana Keluar <span class="req">*</span></label><input id="tk_out_tgl" type="date" class="form-input"></div>
+          <div class="form-group full"><label>Tujuan / Alasan Keluar</label><textarea id="tk_out_reason" class="form-input" style="height:70px;min-height:60px;resize:vertical;" placeholder="Return ke client / RMA / Decomm"></textarea></div>
+        </div>
+
+        <!-- TERMINATION FIELDS: client-only request, handled after processing window -->
+        <div id="tk_fields_terminate" class="form-group full" style="display:none;margin-top:4px;border:1px solid rgba(226,75,74,0.30);background:rgba(226,75,74,0.08);border-radius:10px;padding:14px;">
+          <div style="display:flex;gap:10px;align-items:flex-start;">
+            <div style="font-size:20px;line-height:1;">⛔</div>
+            <div><div style="font-weight:600;color:#fff;font-size:13px;">Permintaan Terminate Layanan</div><div style="font-size:12px;color:var(--text-mid);line-height:1.55;margin-top:4px;">Permintaan akan diverifikasi oleh tim Support. Permintaan harus disetujui oleh <b style="color:#ffb07a;">Admin dan Support</b>. Setelah kedua persetujuan lengkap, akses portal ditutup pada <b style="color:#ffb07a;">hari ke-4</b> sejak pengajuan.</div><div style="font-size:11px;color:#ff9a8a;margin-top:7px;">🕒 Akses ditutup mulai: <b id="tk_terminate_estimate">-</b></div></div>
+          </div>
+        </div>
+
+        <!-- Approval/Completion Info -->
+        <div id="tk_approval_info" class="form-group full" style="display:none;background:rgba(255,255,255,0.03);border:1px solid var(--border);border-radius:10px;padding:12px;margin-bottom:8px;">
+          <div style="display:flex;gap:16px;flex-wrap:wrap;">
+            <div id="tk_approved_by_wrap" style="display:none;"><span style="color:var(--text-dim);font-size:11px;">Disetujui Oleh:</span> <strong id="tk_approved_by_val" style="color:#5dcaa5;font-size:12px;">-</strong></div>
+            <div id="tk_completed_by_wrap" style="display:none;"><span style="color:var(--text-dim);font-size:11px;">Diselesaikan Oleh:</span> <strong id="tk_completed_by_val" style="color:#8cb1ee;font-size:12px;">-</strong></div>
+          </div>
+        </div>
+
+        <div class="form-group full"><label>Deskripsi / Keperluan</label><textarea id="tk_desc" class="form-input" style="height:120px;min-height:110px;resize:vertical;line-height:1.5;" placeholder="Opsional. Jelaskan detail keperluan tiket..."></textarea></div>
+
+        <div id="tk_auto_wrapper" class="form-group full" style="background:rgba(59,124,240,0.06);border:1px solid rgba(59,124,240,0.15);border-radius:9px;padding:12px;">
+          <label style="color:#fff;">⚡ Aksi Otomatis (Opsional)</label>
+          <div style="display:flex;gap:8px;margin-top:8px;flex-wrap:wrap;">
+            <label style="display:flex;align-items:center;gap:6px;font-size:12px;color:var(--text-mid);"><input type="checkbox" id="tk_auto_create" style="accent-color:var(--blue);width:14px;height:14px;"> Auto buat entri di Inventory/CrossConnect saat tiket Selesai</label>
+          </div>
+          <div style="font-size:11px;color:var(--text-dim);margin-top:6px;">Jika dicentang, saat status Selesai: Tiket Masuk Barang akan otomatis menambah perangkat ke inventory, Tiket Keluar Barang akan otomatis mencatat keluar.</div>
+        </div>
+
+        <div id="tk_related_section" class="form-group full" style="display:none;margin-top:12px;border-top:1px solid var(--border);padding-top:14px;">
+          <div style="font-weight:600;font-size:13px;color:#fff;margin-bottom:8px;display:flex;justify-content:space-between;align-items:center;">
+            <span>🎫 Tiket Terkait (<span id="tk_related_count">0</span>)</span>
+          </div>
+          <div id="tk_related_list" style="display:flex;flex-direction:column;gap:8px;"></div>
+        </div>
+      </div>
+    </div>
+    <div class="modal-foot"><button class="btn-secondary" onclick="closeModal('modalTicket')">Batal</button><button class="btn-modal-primary" onclick="saveTicket()">💾 Simpan Tiket</button></div>
+  </div>
+</div>
+
+<!-- MODAL: TOPBAR INFO -->
+<div class="modal-overlay" id="modalTopbarInfo">
+  <div class="modal-card" style="max-width:420px;">
+    <div class="modal-head"><h3 id="topbarInfoTitle">Info</h3><button class="modal-close" onclick="closeModal('modalTopbarInfo')">✕</button></div>
+    <div class="modal-body" id="topbarInfoBody"></div>
+    <div class="modal-foot"><button class="btn-secondary" onclick="closeModal('modalTopbarInfo')">Tutup</button></div>
+  </div>
+</div>
+
+<!-- MODAL: GANTI PASSWORD -->
+<div class="modal-overlay" id="modalChangePassword">
+  <div class="modal-card" style="max-width:460px;">
+    <div class="modal-head"><h3>🔑 Ganti Password</h3><button class="modal-close" onclick="closeModal('modalChangePassword')">✕</button></div>
+    <div class="modal-body">
+      <div style="background:rgba(59,124,240,0.08);border:1px solid rgba(59,124,240,0.2);border-radius:10px;padding:12px;display:flex;gap:10px;align-items:center;margin-bottom:16px;">
+        <div style="width:40px;height:40px;border-radius:50%;background:var(--blue);display:flex;align-items:center;justify-content:center;color:#fff;font-weight:700;" id="cpAvatar">AR</div>
+        <div><div style="font-weight:600;color:#fff;" id="cpName">User</div><div style="font-size:11px;color:var(--text-mid);" id="cpEmail">email</div></div>
+      </div>
+      <div class="form-grid" style="grid-template-columns:1fr;">
+        <div class="form-group"><label>Password Lama</label><div class="account-password-wrap"><input id="cp_old_modal" type="password" class="form-input" placeholder="Masukkan password lama"><button type="button" class="account-password-toggle" data-visible="false" onclick="togglePasswordField('cp_old_modal')"><svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M17.94 17.94A10.07 10.07 0 0112 20c-7 0-11-8-11-8a18.45 18.45 0 015.06-5.94M9.9 4.24A9.12 9.12 0 0112 4c7 0 11 8 11 8a18.5 18.5 0 01-2.16 3.19m-6.72-1.07a3 3 0 11-4.24-4.24"/><line x1="1" y1="1" x2="23" y2="23"/></svg></button></div></div>
+        <div class="form-group"><label>Password Baru</label><div class="account-password-wrap"><input id="cp_new_modal" type="password" class="form-input" placeholder="Minimal 6 karakter"><button type="button" class="account-password-toggle" data-visible="false" onclick="togglePasswordField('cp_new_modal')"><svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M17.94 17.94A10.07 10.07 0 0112 20c-7 0-11-8-11-8a18.45 18.45 0 015.06-5.94M9.9 4.24A9.12 9.12 0 0112 4c7 0 11 8 11 8a18.5 18.5 0 01-2.16 3.19m-6.72-1.07a3 3 0 11-4.24-4.24"/><line x1="1" y1="1" x2="23" y2="23"/></svg></button></div></div>
+        <div class="form-group"><label>Konfirmasi Password Baru</label><div class="account-password-wrap"><input id="cp_confirm_modal" type="password" class="form-input" placeholder="Ulangi password baru"><button type="button" class="account-password-toggle" data-visible="false" onclick="togglePasswordField('cp_confirm_modal')"><svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M17.94 17.94A10.07 10.07 0 0112 20c-7 0-11-8-11-8a18.45 18.45 0 015.06-5.94M9.9 4.24A9.12 9.12 0 0112 4c7 0 11 8 11 8a18.5 18.5 0 01-2.16 3.19m-6.72-1.07a3 3 0 11-4.24-4.24"/><line x1="1" y1="1" x2="23" y2="23"/></svg></button></div></div>
+        <div id="cp_message_modal" style="display:none;font-size:12px;padding:10px;border-radius:8px;"></div>
+      </div>
+    </div>
+    <div class="modal-foot"><button class="btn-secondary" onclick="closeModal('modalChangePassword')">Batal</button><button class="btn-modal-primary" onclick="changePasswordModal()">💾 Simpan Password Baru</button></div>
+  </div>
+</div>
+
+<script data-cfasync="false" src="/cdn-cgi/scripts/5c5dd728/cloudflare-static/email-decode.min.js"></script>
+<script src="js/state.js"></script>
+<script src="js/api.js"></script>
+<script src="js/ui.js"></script>
+<script src="js/render.js"></script>
+<script src="js/auth.js"></script>
+<script src="js/app.js"></script>
+</body>
+</html>
