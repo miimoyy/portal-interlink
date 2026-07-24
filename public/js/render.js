@@ -243,16 +243,31 @@ function isClientBlocked24h(){
   }catch(e){ return false; }
 }
 
-function getBerhentiRemainingHours(){
+function getTerminationRemainingMs(){
   const cl = getClientDataForCurrentUser();
-  if(!cl || !cl.berhentiAt) return 24;
+  if(!cl) return 0;
+  const baseTime = cl.berhentiAt || cl.terminatedAt || cl.terminateAccessEndsAt;
+  if(!baseTime) return 0;
   try{
-    const berhentiTime = new Date(cl.berhentiAt).getTime();
-    const now = Date.now();
-    const diff = now - berhentiTime;
-    const remainingMs = (24*60*60*1000) - diff;
-    return Math.max(0, Math.ceil(remainingMs / (60*60*1000)));
+    const baseTs = new Date(baseTime).getTime();
+    const sevenDaysMs = 7 * 24 * 60 * 60 * 1000;
+    return Math.max(0, (baseTs + sevenDaysMs) - Date.now());
   }catch(e){ return 0; }
+}
+
+function getBerhentiRemainingHours(){
+  return Math.ceil(getTerminationRemainingMs() / (60*60*1000));
+}
+
+function formatCountdownMs(ms){
+  if(ms <= 0) return { days:0, hours:0, minutes:0, seconds:0, label:'00h 00m 00d' };
+  const totalSec = Math.floor(ms / 1000);
+  const days = Math.floor(totalSec / 86400);
+  const hours = Math.floor((totalSec % 86400) / 3600);
+  const minutes = Math.floor((totalSec % 3600) / 60);
+  const seconds = totalSec % 60;
+  const pad = n => String(n).padStart(2, '0');
+  return { days, hours, minutes, seconds, label: `${days}h ${pad(hours)}j ${pad(minutes)}m ${pad(seconds)}d` };
 }
 
 function getDefaultBeratGlobal(kategori){
@@ -749,29 +764,112 @@ function applyRoleToUI(){
     }
   }
 
-  // Berhenti Langganan warning (belum block, masih countdown)
+  // Berhenti Langganan warning: countdown mundur 7 hari live timer
   if(isClientBerhenti()){
+    const remainingMs = getTerminationRemainingMs();
+    const cl = getClientDataForCurrentUser();
+    const baseTime = cl && (cl.berhentiAt || cl.terminatedAt || cl.terminateAccessEndsAt);
+    const berhentiAt = baseTime ? new Date(baseTime).toLocaleString('id-ID') : '-';
+
     let berhentiBanner = document.getElementById('berhentiBanner');
     if(!berhentiBanner){
       berhentiBanner = document.createElement('div');
       berhentiBanner.id = 'berhentiBanner';
-      berhentiBanner.style.cssText = 'position:fixed;top:64px;left:0;right:0;z-index:998;background:rgba(0,0,0,0.85);border-bottom:2px solid #e74c4c;color:#fff;padding:12px 20px;text-align:center;font-size:12.5px;';
+      berhentiBanner.style.cssText = 'position:fixed;top:64px;left:0;right:0;z-index:998;background:linear-gradient(90deg,rgba(185,28,28,0.97),rgba(220,38,38,0.97));border-bottom:2px solid #f87171;color:#fff;padding:0;display:flex;align-items:center;justify-content:center;flex-wrap:wrap;gap:0;box-shadow:0 4px 20px rgba(0,0,0,0.4);';
+      berhentiBanner.innerHTML = `
+        <div style="display:flex;align-items:center;gap:16px;padding:10px 20px;flex-wrap:wrap;justify-content:center;width:100%;">
+          <div style="display:flex;align-items:center;gap:8px;font-size:13px;font-weight:700;">
+            <span style="font-size:18px;">⛔</span>
+            <span>AKUN TERMINATE — <b id="berhentiPtName"></b></span>
+          </div>
+          <div style="display:flex;align-items:center;gap:6px;font-size:11.5px;color:rgba(255,255,255,0.75);">
+            <span>Mulai:</span>
+            <span id="berhentiSinceDate" style="font-weight:600;color:#fca5a5;"></span>
+          </div>
+          <div style="display:flex;align-items:center;gap:4px;">
+            <span style="font-size:12px;color:rgba(255,255,255,0.7);margin-right:6px;">Akses ditutup dalam:</span>
+            <div style="display:flex;gap:6px;align-items:center;">
+              <div style="background:rgba(0,0,0,0.35);border:1px solid rgba(255,255,255,0.2);border-radius:8px;padding:4px 10px;text-align:center;min-width:44px;">
+                <div id="berhentiCountDays" style="font-size:20px;font-weight:700;line-height:1;font-family:monospace;">0</div>
+                <div style="font-size:9px;color:rgba(255,255,255,0.6);margin-top:2px;letter-spacing:0.5px;">HARI</div>
+              </div>
+              <span style="font-size:16px;font-weight:700;opacity:0.6;">:</span>
+              <div style="background:rgba(0,0,0,0.35);border:1px solid rgba(255,255,255,0.2);border-radius:8px;padding:4px 10px;text-align:center;min-width:44px;">
+                <div id="berhentiCountHours" style="font-size:20px;font-weight:700;line-height:1;font-family:monospace;">00</div>
+                <div style="font-size:9px;color:rgba(255,255,255,0.6);margin-top:2px;letter-spacing:0.5px;">JAM</div>
+              </div>
+              <span style="font-size:16px;font-weight:700;opacity:0.6;">:</span>
+              <div style="background:rgba(0,0,0,0.35);border:1px solid rgba(255,255,255,0.2);border-radius:8px;padding:4px 10px;text-align:center;min-width:44px;">
+                <div id="berhentiCountMinutes" style="font-size:20px;font-weight:700;line-height:1;font-family:monospace;">00</div>
+                <div style="font-size:9px;color:rgba(255,255,255,0.6);margin-top:2px;letter-spacing:0.5px;">MENIT</div>
+              </div>
+              <span style="font-size:16px;font-weight:700;opacity:0.6;">:</span>
+              <div style="background:rgba(0,0,0,0.35);border:1px solid rgba(255,255,255,0.2);border-radius:8px;padding:4px 10px;text-align:center;min-width:44px;">
+                <div id="berhentiCountSeconds" style="font-size:20px;font-weight:700;line-height:1;font-family:monospace;">00</div>
+                <div style="font-size:9px;color:rgba(255,255,255,0.6);margin-top:2px;letter-spacing:0.5px;">DETIK</div>
+              </div>
+            </div>
+          </div>
+          <div style="font-size:11px;color:rgba(255,255,255,0.65);">Setelah itu akses portal ditutup permanen. Hubungi <b>Admin</b>.</div>
+          <button onclick="this.parentElement.parentElement.style.display='none'" style="background:rgba(0,0,0,0.25);border:1px solid rgba(255,255,255,0.2);color:#fff;padding:4px 10px;border-radius:6px;font-size:11px;cursor:pointer;">✕</button>
+        </div>`;
       document.body.appendChild(berhentiBanner);
+
+      // Start live countdown interval
+      if(!window._berhentiCountdownInterval){
+        window._berhentiCountdownInterval = setInterval(()=>{
+          const msLeft = getTerminationRemainingMs();
+          const cd = formatCountdownMs(msLeft);
+          const pad = n => String(n).padStart(2, '0');
+          const dEl = document.getElementById('berhentiCountDays');
+          const hEl = document.getElementById('berhentiCountHours');
+          const mEl = document.getElementById('berhentiCountMinutes');
+          const sEl = document.getElementById('berhentiCountSeconds');
+          if(dEl) dEl.textContent = cd.days;
+          if(hEl) hEl.textContent = pad(cd.hours);
+          if(mEl) mEl.textContent = pad(cd.minutes);
+          if(sEl) sEl.textContent = pad(cd.seconds);
+          if(msLeft <= 0){
+            clearInterval(window._berhentiCountdownInterval);
+            window._berhentiCountdownInterval = null;
+            setTimeout(()=>{ alert('⛔ Waktu 7 hari sejak Terminate habis. Akun Anda tidak bisa akses portal lagi.'); logoutUser(); }, 500);
+          }
+        }, 1000);
+      }
     }
-    const remaining = getBerhentiRemainingHours();
-    const cl = getClientDataForCurrentUser();
-    const berhentiAt = cl && cl.berhentiAt ? new Date(cl.berhentiAt).toLocaleString('id-ID') : '-';
-    berhentiBanner.innerHTML = `⛔ AKUN BERHENTI LANGGANAN - ${currentUser.pt} sejak ${berhentiAt}. Akses portal akan ditutup otomatis dalam <b style="color:#ff9a8a;">${remaining} jam</b> (1x24 jam). Setelah itu tidak bisa login lagi. Hubungi Admin segera! <button onclick="this.parentElement.style.display='none'" style="margin-left:12px;background:rgba(226,75,74,0.3);border:1px solid rgba(255,255,255,0.2);color:#fff;padding:4px 10px;border-radius:6px;font-size:11px;cursor:pointer;">Tutup</button>`;
-    berhentiBanner.style.display = remaining>0 ? 'block' : 'none';
-    if(remaining<=0){
+
+    // Update metadata fields
+    const ptEl = document.getElementById('berhentiPtName');
+    const sinceEl = document.getElementById('berhentiSinceDate');
+    if(ptEl) ptEl.textContent = currentUser.pt;
+    if(sinceEl) sinceEl.textContent = berhentiAt;
+
+    // Force initial update
+    const cd = formatCountdownMs(remainingMs);
+    const pad = n => String(n).padStart(2, '0');
+    const dEl = document.getElementById('berhentiCountDays');
+    const hEl = document.getElementById('berhentiCountHours');
+    const mEl = document.getElementById('berhentiCountMinutes');
+    const sEl = document.getElementById('berhentiCountSeconds');
+    if(dEl) dEl.textContent = cd.days;
+    if(hEl) hEl.textContent = pad(cd.hours);
+    if(mEl) mEl.textContent = pad(cd.minutes);
+    if(sEl) sEl.textContent = pad(cd.seconds);
+
+    berhentiBanner.style.display = remainingMs > 0 ? 'flex' : 'none';
+    if(remainingMs <= 0){
       setTimeout(()=>{
-        alert('⛔ Waktu 1x24 jam habis. Akun Berhenti Langganan Anda sekarang tidak bisa akses portal lagi.');
+        alert('⛔ Waktu 7 hari sejak Terminate habis. Akun Anda tidak bisa akses portal lagi.');
         logoutUser();
       }, 1000);
     }
   }else{
     const berhentiBanner = document.getElementById('berhentiBanner');
     if(berhentiBanner) berhentiBanner.style.display = 'none';
+    if(window._berhentiCountdownInterval){
+      clearInterval(window._berhentiCountdownInterval);
+      window._berhentiCountdownInterval = null;
+    }
   }
 
   try{ updateRackExcelButtonVisibility(); }catch(e){}
